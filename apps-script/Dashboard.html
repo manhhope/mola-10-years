@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M-Mola · Event Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a1628;color:#f0ebe0;font-family:'Segoe UI',Arial,sans-serif;min-height:100vh}
+:root{--navy:#0D1B2E;--gold:#C9A84C;--gold-light:#E8D08A;--green:#1a7a4a;--red:#8b1a1a}
+
+/* TOP BAR */
+.topbar{background:#0D1B2E;border-bottom:1px solid rgba(201,168,76,.3);
+  padding:16px 28px;display:flex;align-items:center;justify-content:space-between}
+.topbar-brand{display:flex;align-items:center;gap:14px}
+.topbar-logo{font-size:22px;font-weight:700;color:#C9A84C;letter-spacing:4px}
+.topbar-title{font-size:13px;color:rgba(201,168,76,.5);letter-spacing:3px;text-transform:uppercase}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.badge-live{background:rgba(26,122,74,.25);border:1px solid #1a7a4a;
+  color:#4cd98a;font-size:11px;padding:4px 12px;border-radius:20px;letter-spacing:2px}
+.btn-refresh{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);
+  color:#C9A84C;padding:8px 18px;border-radius:6px;cursor:pointer;
+  font-size:12px;letter-spacing:2px;transition:all .2s}
+.btn-refresh:hover{background:rgba(201,168,76,.2)}
+.last-update{font-size:11px;color:rgba(240,235,224,.3);letter-spacing:1px}
+
+/* LAYOUT */
+.main{padding:24px 28px;max-width:1400px;margin:0 auto}
+.section-title{font-size:10px;letter-spacing:5px;text-transform:uppercase;
+  color:rgba(201,168,76,.45);margin:28px 0 14px}
+
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.stat-card{background:#0D1B2E;border:1px solid rgba(201,168,76,.2);border-radius:10px;
+  padding:20px 18px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat-card.total::before{background:rgba(201,168,76,.6)}
+.stat-card.confirmed::before{background:#1a7a4a}
+.stat-card.declined::before{background:#8b1a1a}
+.stat-card.pending::before{background:rgba(201,168,76,.3)}
+.stat-card.checkin::before{background:#1a5c8a}
+.stat-num{font-size:42px;font-weight:700;color:#E8D08A;line-height:1;margin-bottom:6px}
+.stat-card.confirmed .stat-num{color:#4cd98a}
+.stat-card.declined .stat-num{color:#e05555}
+.stat-card.checkin .stat-num{color:#5ab4e8}
+.stat-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;
+  color:rgba(240,235,224,.35)}
+.stat-pct{font-size:11px;color:rgba(240,235,224,.25);margin-top:4px}
+
+/* CHARTS */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:0}
+.chart-card{background:#0D1B2E;border:1px solid rgba(201,168,76,.15);
+  border-radius:10px;padding:20px 18px}
+.chart-title{font-size:10px;letter-spacing:4px;text-transform:uppercase;
+  color:rgba(201,168,76,.5);margin-bottom:16px}
+.chart-wrap{position:relative;height:200px}
+
+/* CHECKIN PROGRESS BAR */
+.progress-bar-wrap{margin-top:12px}
+.progress-bg{height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#1a5c8a,#5ab4e8);
+  border-radius:4px;transition:width .8s ease}
+.progress-label{display:flex;justify-content:space-between;
+  font-size:11px;color:rgba(240,235,224,.35);margin-top:6px}
+
+/* TABLES */
+.table-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:0}
+.table-card{background:#0D1B2E;border:1px solid rgba(201,168,76,.15);
+  border-radius:10px;padding:20px 18px}
+.table-title{font-size:10px;letter-spacing:4px;text-transform:uppercase;
+  color:rgba(201,168,76,.5);margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:9px;letter-spacing:3px;text-transform:uppercase;
+  color:rgba(240,235,224,.3);padding:6px 10px;text-align:left;
+  border-bottom:1px solid rgba(255,255,255,.06)}
+td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.04);
+  color:rgba(240,235,224,.7);vertical-align:middle}
+tr:hover td{background:rgba(201,168,76,.04)}
+.ticket-pill{display:inline-block;background:rgba(201,168,76,.1);
+  border:1px solid rgba(201,168,76,.3);color:#E8D08A;
+  padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600;
+  letter-spacing:2px}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:10px;
+  letter-spacing:1px;font-weight:600}
+.badge.confirmed{background:rgba(26,122,74,.2);color:#4cd98a;border:1px solid rgba(26,122,74,.4)}
+.badge.declined{background:rgba(139,26,26,.2);color:#e05555;border:1px solid rgba(139,26,26,.4)}
+.badge.pending{background:rgba(201,168,76,.1);color:#C9A84C;border:1px solid rgba(201,168,76,.25)}
+.empty{text-align:center;color:rgba(240,235,224,.2);font-size:13px;
+  font-style:italic;padding:24px}
+
+/* PRIZE TIER BADGES */
+.tier1{color:#ffd700;font-weight:700} .tier2{color:#c0c0c0} .tier3{color:#cd7f32}
+
+/* LOADING */
+.loading{text-align:center;padding:60px;color:rgba(201,168,76,.4);
+  font-size:14px;letter-spacing:3px;text-transform:uppercase}
+.dot{display:inline-block;animation:blink 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div>
+      <div class="topbar-logo">e-Mola</div>
+      <div class="topbar-title">Event Dashboard &nbsp;·&nbsp; 14 August 2026</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="badge-live">● LIVE</span>
+    <span class="last-update" id="last-update">Loading...</span>
+    <button class="btn-refresh" onclick="loadData()">↺ REFRESH</button>
+  </div>
+</div>
+
+<div class="main" id="main">
+  <div class="loading">Loading data<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></div>
+</div>
+
+<script>
+let statsData = null;
+let rsvpChart = null, checkinChart = null, prizeChart = null;
+
+function loadData() {
+  document.getElementById('last-update').textContent = 'Refreshing...';
+  google.script.run
+    .withSuccessHandler(renderDashboard)
+    .withFailureHandler(err => {
+      document.getElementById('last-update').textContent = 'Error: ' + err.message;
+    })
+    .getStats();
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderDashboard(d) {
+  statsData = d;
+  const pct = t => d.total ? Math.round(t / d.total * 100) : 0;
+  const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('last-update').textContent = 'Updated: ' + now;
+
+  document.getElementById('main').innerHTML = `
+    <div class="section-title">Overview</div>
+    <div class="stat-grid">
+      <div class="stat-card total">
+        <div class="stat-num">${d.total}</div>
+        <div class="stat-label">Total Guests</div>
+        <div class="stat-pct">100%</div>
+      </div>
+      <div class="stat-card confirmed">
+        <div class="stat-num">${d.confirmed}</div>
+        <div class="stat-label">Confirmed</div>
+        <div class="stat-pct">${pct(d.confirmed)}% of total</div>
+      </div>
+      <div class="stat-card declined">
+        <div class="stat-num">${d.declined}</div>
+        <div class="stat-label">Not Attending</div>
+        <div class="stat-pct">${pct(d.declined)}% of total</div>
+      </div>
+      <div class="stat-card pending">
+        <div class="stat-num">${d.pending}</div>
+        <div class="stat-label">No Response</div>
+        <div class="stat-pct">${pct(d.pending)}% of total</div>
+      </div>
+      <div class="stat-card checkin">
+        <div class="stat-num">${d.checkedIn}</div>
+        <div class="stat-label">Checked In</div>
+        <div class="stat-pct">${pct(d.checkedIn)}% of total</div>
+      </div>
+    </div>
+
+    <div class="progress-bar-wrap" style="margin:16px 0 0">
+      <div style="font-size:10px;letter-spacing:3px;color:rgba(201,168,76,.45);
+        text-transform:uppercase;margin-bottom:8px">Check-in Progress</div>
+      <div class="progress-bg">
+        <div class="progress-fill" id="pbar" style="width:0%"></div>
+      </div>
+      <div class="progress-label">
+        <span>${d.checkedIn} present</span>
+        <span>${pct(d.checkedIn)}% — ${d.total - d.checkedIn} yet to arrive</span>
+      </div>
+    </div>
+
+    <div class="section-title">Analytics</div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">RSVP Status</div>
+        <div class="chart-wrap"><canvas id="rsvpChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Check-in vs Confirmed</div>
+        <div class="chart-wrap"><canvas id="checkinChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Prizes Drawn</div>
+        <div class="chart-wrap"><canvas id="prizeChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-title">Recent Activity</div>
+    <div class="table-grid">
+      <div class="table-card">
+        <div class="table-title">Recent Check-ins</div>
+        ${renderCheckinTable(d.recent)}
+      </div>
+      <div class="table-card">
+        <div class="table-title">Lucky Draw Winners</div>
+        ${renderWinnersTable(d.winners)}
+      </div>
+    </div>
+  `;
+
+  setTimeout(() => {
+    document.getElementById('pbar').style.width = pct(d.checkedIn) + '%';
+  }, 100);
+
+  drawRSVPChart(d);
+  drawCheckinChart(d);
+  drawPrizeChart(d.winners || []);
+}
+
+function renderCheckinTable(recent) {
+  if (!recent || !recent.length) return '<div class="empty">No check-ins yet</div>';
+  return `<table>
+    <tr><th>Ticket</th><th>Name</th><th>RSVP</th><th>Time</th></tr>
+    ${recent.map(r => `<tr>
+      <td><span class="ticket-pill">${r.ticket}</span></td>
+      <td>${r.name}</td>
+      <td>${badgeRSVP(r.rsvp)}</td>
+      <td style="color:rgba(240,235,224,.3);font-size:11px">${r.time}</td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+function renderWinnersTable(winners) {
+  if (!winners || !winners.length) return '<div class="empty">Draw not started yet</div>';
+  const tierLabel = t => t==1
+    ? '<span class="tier1">Special Prize</span>'
+    : t==2 ? '<span class="tier2">2nd Prize</span>'
+    : '<span class="tier3">3rd Prize</span>';
+  return `<table>
+    <tr><th>Ticket</th><th>Category</th><th>Prize</th><th>Time</th></tr>
+    ${winners.slice().reverse().map(w => `<tr>
+      <td><span class="ticket-pill">${w.ticket}</span></td>
+      <td>${tierLabel(w.tier)}</td>
+      <td style="font-size:11px">${w.prize}</td>
+      <td style="color:rgba(240,235,224,.3);font-size:10px">${w.time}</td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+function badgeRSVP(s) {
+  // Sheet stores Portuguese values — map to English labels
+  const map = { 'Confirmado': 'Confirmed', 'Não vai': 'Not Going', 'Pendente': 'Pending' };
+  const cls = s==='Confirmado' ? 'confirmed' : s==='Não vai' ? 'declined' : 'pending';
+  return `<span class="badge ${cls}">${map[s] || 'Pending'}</span>`;
+}
+
+// ── CHARTS ────────────────────────────────────────────────────────────────────
+const GRAY = 'rgba(240,235,224,.12)';
+
+function drawRSVPChart(d) {
+  const ctx = document.getElementById('rsvpChart').getContext('2d');
+  if (rsvpChart) rsvpChart.destroy();
+  rsvpChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Confirmed', 'Not Going', 'Pending'],
+      datasets: [{ data: [d.confirmed, d.declined, d.pending],
+        backgroundColor: ['rgba(26,122,74,.7)','rgba(139,26,26,.7)','rgba(201,168,76,.25)'],
+        borderColor: ['#1a7a4a','#8b1a1a','rgba(201,168,76,.4)'],
+        borderWidth: 1 }]
+    },
+    options: {
+      cutout: '68%', responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { color:'rgba(240,235,224,.45)', font:{size:11}, padding:12, boxWidth:12 } }
+      }
+    }
+  });
+}
+
+function drawCheckinChart(d) {
+  const ctx = document.getElementById('checkinChart').getContext('2d');
+  if (checkinChart) checkinChart.destroy();
+  checkinChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Confirmed', 'No Response', 'Checked In'],
+      datasets: [{
+        data: [d.confirmed, d.pending, d.checkedIn],
+        backgroundColor: ['rgba(26,122,74,.5)','rgba(201,168,76,.2)','rgba(26,92,138,.6)'],
+        borderColor: ['#1a7a4a','rgba(201,168,76,.4)','#1a5c8a'],
+        borderWidth: 1, borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero:true, grid:{color:GRAY}, ticks:{color:'rgba(240,235,224,.3)',font:{size:10}} },
+        x: { grid:{display:false}, ticks:{color:'rgba(240,235,224,.4)',font:{size:11}} }
+      }
+    }
+  });
+}
+
+function drawPrizeChart(winners) {
+  const ctx = document.getElementById('prizeChart').getContext('2d');
+  if (prizeChart) prizeChart.destroy();
+  const t1 = winners.filter(w => w.tier==1).length;
+  const t2 = winners.filter(w => w.tier==2).length;
+  const t3 = winners.filter(w => w.tier==3).length;
+  prizeChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Special Prize (3)', '2nd Prize (5)', '3rd Prize (10)'],
+      datasets: [{
+        data: [t1, t2, t3],
+        backgroundColor: ['rgba(255,215,0,.4)','rgba(192,192,192,.3)','rgba(205,127,50,.3)'],
+        borderColor: ['#ffd700','#c0c0c0','#cd7f32'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      cutout: '60%', responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position:'bottom', labels:{color:'rgba(240,235,224,.45)',font:{size:10},padding:10,boxWidth:10} }
+      }
+    }
+  });
+}
+
+// ── AUTO-REFRESH every 30s ────────────────────────────────────────────────────
+loadData();
+setInterval(loadData, 30000);
+</script>
+</body>
+</html>

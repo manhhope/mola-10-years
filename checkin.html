@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#0D1B2E">
+<title>Check-in · M-Mola 10 Anos</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0D1B2E;--navy-mid:#16213E;--gold:#C9A84C;--gold-light:#E8D08A;--white:#F5F0E8}
+body{background:var(--navy);color:var(--white);font-family:'Lato',sans-serif;
+  min-height:100svh;display:flex;flex-direction:column}
+
+/* ── TOPBAR ── */
+.topbar{background:rgba(22,33,62,.9);border-bottom:1px solid rgba(201,168,76,.25);
+  padding:14px 20px;display:flex;align-items:center;justify-content:space-between;
+  backdrop-filter:blur(8px);position:sticky;top:0;z-index:10}
+.tl{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--gold);letter-spacing:3px}
+.ts{font-size:10px;letter-spacing:3px;color:rgba(201,168,76,.45);text-transform:uppercase}
+.counter-pill{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);
+  padding:6px 16px;border-radius:20px;text-align:center}
+.counter-num{font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:var(--gold-light)}
+.counter-label{font-size:9px;letter-spacing:3px;color:rgba(201,168,76,.4);text-transform:uppercase}
+
+/* ── MAIN ── */
+main{flex:1;padding:20px;max-width:480px;margin:0 auto;width:100%}
+
+/* ── PIN GATE ── */
+.pin-gate{display:flex;flex-direction:column;align-items:center;
+  justify-content:center;min-height:60svh;gap:20px;text-align:center}
+.pin-title{font-family:'Cinzel',serif;font-size:20px;color:var(--gold-light);letter-spacing:3px}
+.pin-sub{font-size:13px;color:rgba(245,240,232,.4);font-style:italic}
+.pin-input{font-family:'Cinzel',serif;font-size:32px;letter-spacing:16px;
+  text-align:center;background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.35);
+  border-radius:10px;color:var(--gold-light);padding:16px;width:100%;
+  outline:none;max-width:240px}
+.pin-input:focus{border-color:var(--gold);box-shadow:0 0 20px rgba(201,168,76,.15)}
+.btn-gold{width:100%;max-width:240px;padding:16px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--gold),#A8782A);color:var(--navy);
+  font-family:'Cinzel',serif;font-size:14px;font-weight:700;letter-spacing:3px;
+  border-radius:8px;transition:all .2s}
+.btn-gold:hover{opacity:.9;transform:translateY(-1px)}
+.pin-error{color:#e05555;font-size:13px;font-style:italic}
+
+/* ── SCAN AREA ── */
+.scan-area{display:none;flex-direction:column;gap:16px}
+
+/* NFC button */
+.nfc-btn{
+  width:100%;padding:0;border:2px solid rgba(201,168,76,.4);
+  border-radius:16px;cursor:pointer;background:rgba(201,168,76,.06);
+  position:relative;overflow:hidden;transition:all .3s;
+}
+.nfc-btn:hover{border-color:var(--gold);background:rgba(201,168,76,.1)}
+.nfc-btn.scanning{border-color:var(--gold);animation:borderPulse 1.5s infinite}
+@keyframes borderPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.4)}
+  50%{box-shadow:0 0 0 12px rgba(201,168,76,0)}}
+.nfc-inner{padding:32px 20px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.nfc-icon-wrap{width:80px;height:80px;border-radius:50%;
+  background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);
+  display:flex;align-items:center;justify-content:center}
+.nfc-icon-wrap svg{width:40px;height:40px;stroke:var(--gold);fill:none;stroke-width:1.5}
+.nfc-btn.scanning .nfc-icon-wrap{animation:iconPulse 1s infinite}
+@keyframes iconPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.nfc-label{font-family:'Cinzel',serif;font-size:15px;color:var(--gold-light);letter-spacing:2px}
+.nfc-sub{font-size:12px;color:rgba(245,240,232,.35);font-style:italic;text-align:center}
+.nfc-status{font-size:12px;letter-spacing:2px;text-transform:uppercase}
+
+/* Manual fallback */
+.divider-or{display:flex;align-items:center;gap:12px}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;
+  background:rgba(201,168,76,.15)}
+.divider-or span{font-size:10px;letter-spacing:3px;color:rgba(201,168,76,.3);
+  text-transform:uppercase}
+.manual-row{display:flex;gap:10px}
+.manual-input{flex:1;padding:14px 16px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(201,168,76,.25);border-radius:8px;
+  color:var(--white);font-family:'Cinzel',serif;font-size:18px;
+  letter-spacing:6px;text-align:center;outline:none}
+.manual-input:focus{border-color:var(--gold)}
+.manual-input::placeholder{color:rgba(245,240,232,.2);letter-spacing:4px}
+.btn-manual{padding:14px 20px;border-radius:8px;cursor:pointer;border:none;
+  background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.35);
+  color:var(--gold);font-family:'Cinzel',serif;font-size:13px;
+  letter-spacing:2px;transition:all .2s}
+.btn-manual:hover{background:rgba(201,168,76,.25)}
+
+/* ── RESULT CARDS ── */
+.result-card{border-radius:14px;padding:24px;margin-bottom:12px;
+  border:1px solid;animation:slideIn .4s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+.result-card.success{background:rgba(26,122,74,.12);border-color:rgba(26,122,74,.4)}
+.result-card.warning{background:rgba(201,168,76,.08);border-color:rgba(201,168,76,.3)}
+.result-card.error{background:rgba(139,26,26,.15);border-color:rgba(139,26,26,.4)}
+.result-icon{font-size:36px;margin-bottom:10px}
+.result-ticket{font-family:'Cinzel',serif;font-size:36px;font-weight:700;
+  color:var(--gold-light);letter-spacing:6px;margin-bottom:4px}
+.result-name{font-family:'Cinzel',serif;font-size:16px;color:var(--white);
+  letter-spacing:1px;margin-bottom:6px}
+.result-status{font-size:13px;font-style:italic;opacity:.6}
+.result-badge{display:inline-block;padding:4px 14px;border-radius:20px;
+  font-size:11px;letter-spacing:2px;margin-top:10px;font-family:'Cinzel',serif}
+.rb-green{background:rgba(26,122,74,.3);color:#4cd98a;border:1px solid rgba(26,122,74,.5)}
+.rb-gold{background:rgba(201,168,76,.15);color:var(--gold);border:1px solid rgba(201,168,76,.3)}
+.rb-red{background:rgba(139,26,26,.2);color:#e05555;border:1px solid rgba(139,26,26,.4)}
+
+/* ── RECENT LIST ── */
+.recent-section{margin-top:8px}
+.recent-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:4px;
+  text-transform:uppercase;color:rgba(201,168,76,.4);margin-bottom:10px}
+.recent-item{display:flex;align-items:center;gap:12px;padding:10px 14px;
+  background:rgba(255,255,255,.025);border-radius:8px;margin-bottom:6px;
+  border-left:3px solid rgba(26,122,74,.5)}
+.ri-ticket{font-family:'Cinzel',serif;font-size:14px;font-weight:700;
+  color:var(--gold-light);letter-spacing:2px;min-width:44px}
+.ri-name{font-size:13px;color:rgba(245,240,232,.6);flex:1}
+.ri-time{font-size:10px;color:rgba(245,240,232,.25)}
+
+/* ── SPINNER ── */
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(201,168,76,.2);
+  border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── IOS WARNING ── */
+.ios-note{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);
+  border-radius:10px;padding:14px;font-size:12px;color:rgba(245,240,232,.5);
+  line-height:1.7;display:none}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="tl">e-Mola</div>
+    <div class="ts">Check-in · 14 Ago 2026</div>
+  </div>
+  <div class="counter-pill">
+    <div class="counter-num" id="counter">—</div>
+    <div class="counter-label">Check-ins</div>
+  </div>
+</div>
+
+<main>
+
+  <!-- PIN GATE -->
+  <div class="pin-gate" id="pin-gate">
+    <div>
+      <div class="pin-title">Acesso Restrito</div>
+      <div class="pin-sub" style="margin-top:6px">Insira o PIN da equipa de organização</div>
+    </div>
+    <input class="pin-input" type="password" inputmode="numeric" maxlength="4"
+      id="pin-input" placeholder="• • • •" autocomplete="off">
+    <button class="btn-gold" onclick="verifyPIN()">ENTRAR</button>
+    <div class="pin-error" id="pin-error" style="display:none">PIN incorreto. Tente novamente.</div>
+  </div>
+
+  <!-- SCAN AREA (hidden until PIN ok) -->
+  <div class="scan-area" id="scan-area">
+
+    <!-- NFC tap button -->
+    <button class="nfc-btn" id="nfc-btn" onclick="toggleScan()">
+      <div class="nfc-inner">
+        <div class="nfc-icon-wrap">
+          <svg viewBox="0 0 24 24">
+            <path d="M20 7c0-2.76-2.24-5-5-5s-5 2.24-5 5 2.24 5 5 5 5-2.24 5-5z" opacity=".3"/>
+            <path d="M6 7H4a10 10 0 0 0 10 10v-2A8 8 0 0 1 6 7z"/>
+            <path d="M2 7H0a14 14 0 0 0 14 14v-2A12 12 0 0 1 2 7z" opacity=".5"/>
+            <circle cx="15" cy="7" r="2" fill="var(--gold)"/>
+          </svg>
+        </div>
+        <div class="nfc-label" id="nfc-label">TAP PARA SCAN NFC</div>
+        <div class="nfc-sub" id="nfc-sub">
+          Aproxime o cartão do convidado<br>à parte traseira deste telemóvel
+        </div>
+        <div class="nfc-status" id="nfc-status" style="color:rgba(201,168,76,.45)">
+          ● Pronto
+        </div>
+      </div>
+    </button>
+
+    <!-- iOS note -->
+    <div class="ios-note" id="ios-note">
+      ℹ️ O NFC automático não está disponível no Safari/iOS. Use a entrada manual abaixo para fazer check-in.
+    </div>
+
+    <!-- Manual entry -->
+    <div class="divider-or"><span>Ou entrada manual</span></div>
+    <div class="manual-row">
+      <input class="manual-input" type="text" inputmode="numeric" maxlength="3"
+        id="manual-input" placeholder="001" autocomplete="off">
+      <button class="btn-manual" onclick="doManualCheckin()">CHECK-IN</button>
+    </div>
+
+    <!-- Result area -->
+    <div id="result-area"></div>
+
+    <!-- Recent checkins -->
+    <div class="recent-section">
+      <div class="recent-title">Últimos Check-ins</div>
+      <div id="recent-list"><div style="font-size:12px;color:rgba(245,240,232,.2);
+        font-style:italic;padding:8px 0">Nenhum check-in ainda</div></div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// ⚠️  CONFIGURAR ANTES DE USAR:
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+// ════════════════════════════════════════════════════════════════
+
+let adminPIN    = '';
+let nfcActive   = false;
+let nfcReader   = null;
+let checkinCount = 0;
+const recent    = [];
+
+// ── PIN ──────────────────────────────────────────────────────────
+document.getElementById('pin-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') verifyPIN();
+});
+
+function verifyPIN() {
+  const val = document.getElementById('pin-input').value.trim();
+  if (!val) return;
+  // Quick local check (server will double-check on each action)
+  adminPIN = val;
+  document.getElementById('pin-gate').style.display = 'none';
+  document.getElementById('scan-area').style.display = 'flex';
+  document.getElementById('scan-area').style.flexDirection = 'column';
+  checkNFCSupport();
+  loadRecentStats();
+}
+
+// ── NFC ──────────────────────────────────────────────────────────
+function checkNFCSupport() {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if (isIOS || !('NDEFReader' in window)) {
+    document.getElementById('ios-note').style.display = 'block';
+    document.getElementById('nfc-btn').style.opacity = '0.4';
+    document.getElementById('nfc-btn').style.pointerEvents = 'none';
+    document.getElementById('nfc-label').textContent = 'NFC não suportado';
+    document.getElementById('nfc-sub').textContent = 'Use a entrada manual abaixo';
+  }
+}
+
+async function toggleScan() {
+  if (!('NDEFReader' in window)) return;
+
+  if (nfcActive) {
+    stopScan();
+    return;
+  }
+
+  try {
+    nfcReader = new NDEFReader();
+    await nfcReader.scan();
+    nfcActive = true;
+
+    const btn = document.getElementById('nfc-btn');
+    btn.classList.add('scanning');
+    document.getElementById('nfc-label').textContent = 'A AGUARDAR CARTÃO...';
+    document.getElementById('nfc-status').textContent = '● A ler NFC...';
+    document.getElementById('nfc-status').style.color = 'var(--gold)';
+
+    nfcReader.addEventListener('reading', ({ message }) => {
+      for (const record of message.records) {
+        if (record.recordType === 'url') {
+          const decoder = new TextDecoder();
+          const url     = decoder.decode(record.data);
+          const ticket  = extractTicket(url);
+          if (ticket) {
+            stopScan();
+            doCheckin(ticket);
+            return;
+          }
+        }
+      }
+      showResult('error', '?', '—', 'QR inválido — Cartão não reconhecido');
+    });
+
+    nfcReader.addEventListener('readingerror', () => {
+      showResult('error', '!', '—', 'Erro ao ler o cartão NFC');
+    });
+
+  } catch (err) {
+    showResult('error', '!', '—', 'NFC não disponível: ' + err.message);
+  }
+}
+
+function stopScan() {
+  nfcActive = false;
+  nfcReader = null;
+  const btn = document.getElementById('nfc-btn');
+  btn.classList.remove('scanning');
+  document.getElementById('nfc-label').textContent = 'TAP PARA SCAN NFC';
+  document.getElementById('nfc-status').textContent = '● Pronto';
+  document.getElementById('nfc-status').style.color = 'rgba(201,168,76,.45)';
+}
+
+function extractTicket(url) {
+  try {
+    const u = new URL(url);
+    return u.searchParams.get('ticket');
+  } catch { return null; }
+}
+
+// ── MANUAL CHECK-IN ───────────────────────────────────────────────
+document.getElementById('manual-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doManualCheckin();
+});
+
+function doManualCheckin() {
+  const val = document.getElementById('manual-input').value.trim().padStart(3, '0');
+  if (!val || val === '000') return;
+  doCheckin(val);
+  document.getElementById('manual-input').value = '';
+}
+
+// ── CHECK-IN API CALL ─────────────────────────────────────────────
+async function doCheckin(ticket) {
+  setLoading(true);
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'checkin', ticket, pin: adminPIN }),
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    const data = await res.json();
+    setLoading(false);
+
+    if (data.error) {
+      showResult('error', '✗', ticket, data.error);
+      return;
+    }
+
+    if (data.alreadyCheckedIn) {
+      showResult('warning', '⚠', ticket,
+        `<strong style="color:var(--gold-light)">${data.name}</strong><br>
+        <span style="font-size:12px;opacity:.5">Já fez check-in às ${data.checkinTime}</span>`);
+    } else {
+      showResult('success', '✓', ticket,
+        `<strong style="color:#4cd98a">${data.name}</strong><br>
+        <span class="result-badge rb-green">RSVP: ${data.rsvp || 'Pendente'}</span>`);
+      checkinCount++;
+      document.getElementById('counter').textContent = checkinCount;
+      addToRecent(ticket, data.name);
+    }
+  } catch (err) {
+    setLoading(false);
+    showResult('error', '!', ticket, 'Erro de ligação. Verifique o URL do script.');
+  }
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────
+function showResult(type, icon, ticket, msg) {
+  const area = document.getElementById('result-area');
+  area.innerHTML = `
+    <div class="result-card ${type}">
+      <div class="result-icon">${icon}</div>
+      <div class="result-ticket">${ticket.padStart(3,'0')}</div>
+      <div>${msg}</div>
+    </div>`;
+
+  // Auto-clear after 5s
+  setTimeout(() => {
+    if (area.firstChild) area.innerHTML = '';
+  }, 5000);
+}
+
+function setLoading(on) {
+  const area = document.getElementById('result-area');
+  if (on) {
+    area.innerHTML = `<div style="text-align:center;padding:20px;color:rgba(201,168,76,.5)">
+      <div class="spinner" style="margin:0 auto"></div>
+      <div style="margin-top:10px;font-size:11px;letter-spacing:3px">A verificar...</div>
+    </div>`;
+  }
+}
+
+function addToRecent(ticket, name) {
+  const list = document.getElementById('recent-list');
+  const time = new Date().toLocaleTimeString('pt-MZ', {hour:'2-digit',minute:'2-digit'});
+  recent.unshift({ ticket, name, time });
+  if (recent.length > 8) recent.pop();
+  list.innerHTML = recent.map(r => `
+    <div class="recent-item">
+      <span class="ri-ticket">${r.ticket}</span>
+      <span class="ri-name">${r.name}</span>
+      <span class="ri-time">${r.time}</span>
+    </div>`).join('');
+}
+
+async function loadRecentStats() {
+  try {
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=stats');
+    const data = await res.json();
+    if (data.checkedIn !== undefined) {
+      checkinCount = data.checkedIn;
+      document.getElementById('counter').textContent = checkinCount;
+    }
+    if (data.recent && data.recent.length) {
+      data.recent.forEach(r => recent.push(r));
+      const list = document.getElementById('recent-list');
+      list.innerHTML = recent.map(r => `
+        <div class="recent-item">
+          <span class="ri-ticket">${r.ticket}</span>
+          <span class="ri-name">${r.name}</span>
+          <span class="ri-time">${r.time}</span>
+        </div>`).join('');
+    }
+  } catch (_) {}
+}
+</script>
+</body>
+</html>
