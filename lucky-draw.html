@@ -252,15 +252,56 @@
   .footer-ornament { font-family: 'Cinzel', serif; font-size: 12px; color: rgba(201,168,76,.4); letter-spacing: 2px; }
   .footer-tagline { font-family: 'Cinzel', serif; font-size: 14px; color: rgba(201,168,76,.55); letter-spacing: 2px; }
 
-  /* ── CONFETTI ── */
-  .confetti-piece {
-    position: fixed; width: 8px; height: 8px; top: -10px;
-    border-radius: 2px; pointer-events: none; z-index: 999;
-    animation: confettiFall linear forwards;
+  /* ── MONEY RAIN ── */
+  .money-piece {
+    position: fixed; top: -60px;
+    pointer-events: none; z-index: 999;
+    font-family: 'Bebas Neue', sans-serif;
+    animation: moneyFall linear forwards;
+    user-select: none;
   }
-  @keyframes confettiFall {
-    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  .money-coin {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #F0D878, #C9A84C 50%, #8A6E30);
+    border: 2px solid #E8D08A;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    color: #5A3E10; font-size: 18px; font-weight: 900;
+    box-shadow: 0 3px 8px rgba(0,0,0,.4), inset 0 1px 2px rgba(255,255,220,.5);
+  }
+  .money-bill {
+    width: 64px; height: 30px; border-radius: 4px;
+    background: linear-gradient(135deg, #2D6A3F, #3D8B52);
+    border: 1px solid #5AB070;
+    display: flex; align-items: center; justify-content: center;
+    color: #A8E8B8; font-size: 15px; letter-spacing: 1px;
+    box-shadow: 0 3px 8px rgba(0,0,0,.4);
+  }
+  @keyframes moneyFall {
+    0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+    80%  { opacity: 1; }
+    100% { transform: translateY(110vh) rotate(var(--rot)) scale(0.8); opacity: 0; }
+  }
+
+  /* ── FIREWORKS CANVAS ── */
+  #fw-canvas {
+    position: fixed; inset: 0; z-index: 150;
+    pointer-events: none; display: none;
+  }
+
+  /* ── STREAMERS ── */
+  .streamer-piece {
+    position: fixed; top: -80px;
+    pointer-events: none; z-index: 999;
+    animation: streamerFall linear forwards;
+  }
+  @keyframes streamerFall {
+    0%   { transform: translateY(0)    translateX(0)              rotate(0deg);   opacity: 1; }
+    20%  { transform: translateY(20vh) translateX(var(--sw))      rotate(120deg); }
+    45%  { transform: translateY(45vh) translateX(calc(var(--sw) * -0.7)) rotate(270deg); }
+    70%  { transform: translateY(70vh) translateX(calc(var(--sw) * 0.5))  rotate(420deg); }
+    90%  { opacity: 1; }
+    100% { transform: translateY(115vh) translateX(0)             rotate(600deg); opacity: 0; }
   }
 
   /* ── WINNER OVERLAY ── */
@@ -314,6 +355,8 @@
 
 <!-- Background particles canvas -->
 <canvas id="particles"></canvas>
+<!-- Fireworks canvas -->
+<canvas id="fw-canvas"></canvas>
 
 <!-- Mozambique map silhouette (SVG inline) -->
 <svg class="moz-map" viewBox="0 0 300 620" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -440,7 +483,53 @@ let remaining   = { 1: 3, 2: 5, 3: 10 };
 let drawnNums   = new Set();
 let currentTier = 3;
 let spinning    = false;
-let spinInterval;
+let spinTimer;
+
+// ─── AUDIO ───────────────────────────────────────────────────────────────────
+let audioCtx = null;
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function beep(freq, dur, vol, when, type='sine') {
+  const ctx = getCtx(), now = when || ctx.currentTime;
+  const osc = ctx.createOscillator(), g = ctx.createGain();
+  osc.type = type; osc.frequency.value = freq;
+  g.gain.setValueAtTime(vol, now);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+  osc.connect(g); g.connect(ctx.destination);
+  osc.start(now); osc.stop(now + dur + 0.01);
+}
+function playTick() {
+  const ctx = getCtx(), t = ctx.currentTime;
+  beep(900, 0.03, 0.12, t, 'square');
+  beep(450, 0.03, 0.06, t, 'sine');
+}
+function playSlowTick(vol) {
+  const ctx = getCtx(), t = ctx.currentTime;
+  beep(600, 0.06, vol, t, 'square');
+  beep(300, 0.06, vol * 0.5, t, 'sine');
+}
+function playWinSound(tier) {
+  const ctx = getCtx(), t = ctx.currentTime;
+  if (tier === 1) {
+    // Grand fanfare — ascending arpeggio + full chord
+    [523,659,784,988,1319].forEach((f, i) => beep(f, 0.35, 0.28, t + i * 0.1));
+    // Sustained chord
+    [523,659,784,1047].forEach(f => beep(f, 1.8, 0.18, t + 0.65));
+    // Top sparkle
+    beep(2093, 1.2, 0.22, t + 0.8);
+    beep(2637, 0.9, 0.18, t + 1.1);
+  } else if (tier === 2) {
+    [440,554,659,880].forEach((f, i) => beep(f, 0.25, 0.22, t + i * 0.1));
+    beep(880, 1.0, 0.22, t + 0.5);
+    beep(1109, 0.7, 0.15, t + 0.8);
+  } else {
+    [392,494,587].forEach((f, i) => beep(f, 0.2, 0.2, t + i * 0.11));
+    beep(784, 0.8, 0.2, t + 0.45);
+  }
+}
 
 // ─── TIER SELECT ─────────────────────────────────────────────────────────────
 function selectTier(t) {
@@ -452,80 +541,80 @@ function selectTier(t) {
   resetDrum();
 }
 
-// ─── DRAW ────────────────────────────────────────────────────────────────────
+// ─── DRAW (with slowdown) ────────────────────────────────────────────────────
 function startDraw() {
   if (spinning) return;
   const prize = PRIZES[currentTier];
   if (remaining[currentTier] <= 0) {
     alert('Todos os prémios desta categoria já foram sorteados!'); return;
   }
-
   spinning = true;
   document.getElementById('btn-draw').disabled = true;
   const num = document.getElementById('drum-number');
   num.className = 'drum-number spinning';
+  getCtx(); // unlock audio on user gesture
 
-  // Spin phase
-  let spins = 0;
-  const spinDuration = 2200;
-  const interval = 80;
-  spinInterval = setInterval(() => {
-    num.textContent = pad(randUndrawn());
-    spins += interval;
-  }, interval);
+  const winner = pickWinner();
+  let step = 0;
+  const FAST = 20, TOTAL = 38;
 
-  // Slow down and stop
-  setTimeout(() => {
-    clearInterval(spinInterval);
-    const winner = pickWinner();
-    showResult(winner, prize);
-  }, spinDuration);
-}
+  function tick() {
+    step++;
+    const isFast = step <= FAST;
+    const progress = Math.max(0, (step - FAST) / (TOTAL - FAST));
+    const delay = isFast ? 70 : Math.min(70 + progress * progress * 600, 680);
 
-function randUndrawn() {
-  let n; do { n = Math.floor(Math.random() * TOTAL_GUESTS) + 1; } while(false);
-  return n;
+    // Show random num during fast phase, converge to winner near end
+    num.textContent = (step < TOTAL - 3)
+      ? pad(Math.floor(Math.random() * TOTAL_GUESTS) + 1)
+      : pad(winner);
+
+    if (isFast) { playTick(); }
+    else { playSlowTick(0.1 + progress * 0.15); }
+
+    if (step < TOTAL) {
+      spinTimer = setTimeout(tick, delay);
+    } else {
+      num.textContent = pad(winner);
+      num.className = 'drum-number winner';
+      showResult(winner, prize);
+    }
+  }
+  tick();
 }
 
 function pickWinner() {
-  let n;
-  let attempts = 0;
-  do {
-    n = Math.floor(Math.random() * TOTAL_GUESTS) + 1;
-    attempts++;
-    if (attempts > 1000) break; // safety
-  } while(drawnNums.has(n));
+  let n, tries = 0;
+  do { n = Math.floor(Math.random() * TOTAL_GUESTS) + 1; tries++; } while(drawnNums.has(n) && tries < 500);
   drawnNums.add(n);
   return n;
 }
 
 function showResult(number, prize) {
-  const num = document.getElementById('drum-number');
-  num.textContent = pad(number);
-  num.className = 'drum-number winner';
-
   remaining[currentTier]--;
   document.getElementById(`rem-${currentTier}`).textContent = `Restam: ${remaining[currentTier]}`;
-
-  // Log winner
   addWinnerToLog(number, prize, currentTier);
 
-  // Show overlay after brief pause
   setTimeout(() => {
     document.getElementById('wc-subtitle').textContent = prize.rank;
     document.getElementById('wc-prize').textContent = prize.name;
     document.getElementById('wc-number').textContent = pad(number);
     document.getElementById('winner-overlay').classList.add('show');
-    launchConfetti();
-  }, 800);
+    playWinSound(currentTier);
+    if (currentTier === 1) {
+      launchFireworks();
+      launchMoneyRain();
+    } else {
+      launchStreamers();
+      launchMoneyRain();
+    }
+  }, 500);
 }
 
 function addWinnerToLog(number, prize, tier) {
   const list = document.getElementById('winners-list');
-  // Remove placeholder
   const ph = list.querySelector('div[style]');
   if (ph) ph.remove();
-
   const item = document.createElement('div');
   item.className = 'winner-item';
   item.innerHTML = `
@@ -552,40 +641,174 @@ function resetDrum() {
   num.className = 'drum-number idle';
   num.textContent = '– – – –';
 }
-
 function resetAll() {
   if (!confirm('Reiniciar todo o sorteio? Todos os resultados serão apagados.')) return;
   remaining = { 1:3, 2:5, 3:10 };
   drawnNums.clear();
   spinning = false;
-  clearInterval(spinInterval);
+  clearTimeout(spinTimer);
   document.getElementById('btn-draw').disabled = false;
   document.getElementById('winners-list').innerHTML =
     '<div style="font-size:12px;color:rgba(245,240,232,.25);letter-spacing:1px;margin-top:8px;text-align:center;">Nenhum sorteio efectuado</div>';
-  [1,2,3].forEach(t => {
-    document.getElementById(`rem-${t}`).textContent = `Restam: ${PRIZES[t].total}`;
-  });
+  [1,2,3].forEach(t => document.getElementById(`rem-${t}`).textContent = `Restam: ${PRIZES[t].total}`);
   resetDrum();
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 function pad(n) { return String(n).padStart(4, '0'); }
 
-// ─── CONFETTI ────────────────────────────────────────────────────────────────
-function launchConfetti() {
-  const colors = ['#C9A84C','#E8D08A','#8A6E30','#F5F0E8','#E8640A'];
-  for (let i = 0; i < 80; i++) {
+// ─── 🎆 FIREWORKS (Giải ĐB only) ─────────────────────────────────────────────
+function launchFireworks() {
+  const canvas = document.getElementById('fw-canvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+  const COLORS = ['#C9A84C','#E8D08A','#E8640A','#FFFFFF','#FFD700','#FF9944','#F5F0E8'];
+  const rockets = [], sparks = [];
+  let frame = 0, raf;
+
+  function mkRocket(fromLeft) {
+    return {
+      x: fromLeft ? window.innerWidth * 0.08 + Math.random() * 80
+                  : window.innerWidth * 0.92 - Math.random() * 80,
+      y: window.innerHeight,
+      vx: (fromLeft ? 1 : -1) * (Math.random() * 1.5 + 0.5),
+      vy: -(Math.random() * 7 + 11),
+      trail: [], done: false
+    };
+  }
+  function explode(x, y) {
+    const c1 = COLORS[Math.floor(Math.random() * COLORS.length)];
+    const c2 = COLORS[Math.floor(Math.random() * COLORS.length)];
+    for (let i = 0; i < 90; i++) {
+      const a = Math.random() * Math.PI * 2, s = Math.random() * 5 + 1;
+      sparks.push({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s,
+        life: Math.random() * 70 + 50, color: Math.random()>.5 ? c1 : c2 });
+    }
+    // Audio pop
+    const t = getCtx().currentTime;
+    beep(180 + Math.random()*80, 0.3, 0.18, t, 'sawtooth');
+    beep(80,  0.5, 0.12, t, 'sine');
+  }
+
+  // Launch schedule: 4 pairs staggered
+  [0, 350, 750, 1300].forEach(delay => setTimeout(() => {
+    rockets.push(mkRocket(true)); rockets.push(mkRocket(false));
+  }, delay));
+
+  function animate() {
+    ctx.fillStyle = 'rgba(13,27,46,0.18)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    frame++;
+
+    rockets.forEach(r => {
+      if (r.done) return;
+      r.x += r.vx; r.y += r.vy; r.vy += 0.18;
+      r.trail.push({x:r.x,y:r.y});
+      if (r.trail.length > 10) r.trail.shift();
+      r.trail.forEach((t,i) => {
+        ctx.beginPath(); ctx.arc(t.x,t.y,2,0,Math.PI*2);
+        ctx.fillStyle = `rgba(201,168,76,${i/r.trail.length*0.7})`; ctx.fill();
+      });
+      if (r.vy > -1) { r.done = true; explode(r.x, r.y); }
+    });
+
+    for (let i = sparks.length-1; i >= 0; i--) {
+      const p = sparks[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.09; p.vx *= 0.97; p.life--;
+      if (p.life <= 0) { sparks.splice(i,1); continue; }
+      const a = p.life / 120;
+      const hex = Math.floor(a*255).toString(16).padStart(2,'0');
+      ctx.beginPath(); ctx.arc(p.x, p.y, Math.random()*2+0.5, 0, Math.PI*2);
+      ctx.fillStyle = p.color + hex; ctx.fill();
+    }
+
+    if (frame < 400 || sparks.length > 0) {
+      raf = requestAnimationFrame(animate);
+    } else {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      canvas.style.display = 'none';
+    }
+  }
+  animate();
+  setTimeout(() => { cancelAnimationFrame(raf); ctx.clearRect(0,0,canvas.width,canvas.height); canvas.style.display='none'; }, 7000);
+}
+
+// ─── 🎊 STREAMERS (Giải Nhì & Ba) ────────────────────────────────────────────
+function launchStreamers() {
+  const colors = ['#C9A84C','#E8D08A','#E8640A','#F5F0E8','#FF6B9D','#6BDDFF','#B8FF6B','#FFD700','#16213E'];
+  for (let i = 0; i < 90; i++) {
     const el = document.createElement('div');
-    el.className = 'confetti-piece';
-    el.style.left = Math.random() * 100 + 'vw';
-    el.style.background = colors[Math.floor(Math.random() * colors.length)];
-    el.style.width = (Math.random() * 8 + 4) + 'px';
-    el.style.height = (Math.random() * 12 + 4) + 'px';
-    el.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
-    el.style.animationDelay = Math.random() * 0.8 + 's';
-    el.style.borderRadius = Math.random() > .5 ? '50%' : '2px';
+    el.className = 'streamer-piece';
+    el.style.left = (Math.random() * 110 - 5) + 'vw';
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const dur   = Math.random() * 2.5 + 2;
+    const delay = Math.random() * 1.8;
+    const sway  = (Math.random() * 80 + 30) * (Math.random() > .5 ? 1 : -1);
+    el.style.setProperty('--sw', sway + 'px');
+    el.style.animationDuration  = dur + 's';
+    el.style.animationDelay     = delay + 's';
+
+    const type = Math.random();
+    if (type < 0.45) {
+      // Ribbon
+      el.style.width  = (Math.random() * 5 + 2) + 'px';
+      el.style.height = (Math.random() * 50 + 20) + 'px';
+      el.style.background = color;
+      el.style.borderRadius = '2px';
+    } else if (type < 0.75) {
+      // Circle
+      const s = Math.random() * 14 + 6;
+      el.style.width  = s + 'px'; el.style.height = s + 'px';
+      el.style.borderRadius = '50%'; el.style.background = color;
+    } else if (type < 0.88) {
+      // Star shape via border trick
+      el.style.width  = '0'; el.style.height = '0';
+      el.style.borderLeft   = '8px solid transparent';
+      el.style.borderRight  = '8px solid transparent';
+      el.style.borderBottom = `16px solid ${color}`;
+    } else {
+      // Square
+      const s = Math.random() * 10 + 5;
+      el.style.width  = s + 'px'; el.style.height = s + 'px';
+      el.style.background = color;
+      el.style.transform = `rotate(${Math.random()*45}deg)`;
+    }
     document.body.appendChild(el);
-    setTimeout(() => el.remove(), 4000);
+    setTimeout(() => el.remove(), (dur + delay + 0.5) * 1000);
+  }
+}
+
+// ─── 💰 MONEY RAIN ───────────────────────────────────────────────────────────
+function launchMoneyRain() {
+  const symbols   = ['$', 'MZN', '$', '€', '$', 'MZN'];
+  const billLabels = ['$100', 'MZN', '$50', '$100'];
+  for (let i = 0; i < 50; i++) {
+    const el = document.createElement('div');
+    el.className = 'money-piece';
+    el.style.left = (Math.random() * 110 - 5) + 'vw';
+    el.style.animationDuration = (Math.random() * 2.5 + 1.8) + 's';
+    el.style.animationDelay    = (Math.random() * 1.2) + 's';
+    el.style.setProperty('--rot', ((Math.random()-.5)*720) + 'deg');
+    const isCoin = Math.random() > .35;
+    if (isCoin) {
+      const size = Math.random() * 18 + 34;
+      const inner = document.createElement('div');
+      inner.className = 'money-coin';
+      inner.style.width = size + 'px'; inner.style.height = size + 'px';
+      inner.style.fontSize = (size * .38) + 'px';
+      inner.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      el.appendChild(inner);
+    } else {
+      const inner = document.createElement('div');
+      inner.className = 'money-bill';
+      inner.textContent = billLabels[Math.floor(Math.random() * billLabels.length)];
+      inner.style.transform = `rotate(${(Math.random()-.5)*30}deg)`;
+      el.appendChild(inner);
+    }
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 5500);
   }
 }
 
