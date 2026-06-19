@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>e-Mola | Cartão de Sorteio – 10 Anos Juntos</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;600;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:      #0D1B2E;
+    --navy-mid:  #16213E;
+    --navy-light:#1E2F4D;
+    --gold:      #C9A84C;
+    --gold-light:#E8D08A;
+    --gold-dim:  #8A6E30;
+    --white:     #F5F0E8;
+    --orange:    #E8640A;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'Lato', sans-serif;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── GOLD SHIMMER PARTICLES ── */
+  #particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+
+  /* ── MOZAMBIQUE MAP SVG (background deco) ── */
+  .moz-map {
+    position: fixed; right: -60px; bottom: -40px;
+    width: 420px; opacity: .07;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── LAYOUT ── */
+  .page {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    height: 100vh;
+    padding: 0 48px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 0 16px;
+    border-bottom: 1px solid rgba(201,168,76,.25);
+  }
+  .logo-area { display: flex; align-items: center; gap: 18px; }
+  .logo-badge {
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 2px solid var(--gold);
+    background: var(--navy-mid);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 0;
+    box-shadow: 0 0 20px rgba(201,168,76,.3);
+  }
+  .logo-badge .anos { font-family: 'EB Garamond', serif; font-size: 22px; font-weight: 700; color: var(--gold); line-height: 1; }
+  .logo-badge .anos-label { font-size: 8px; letter-spacing: 3px; color: var(--gold-light); text-transform: uppercase; }
+  .logo-text h1 { font-family: 'Cinzel', serif; font-size: 26px; color: var(--gold); font-weight: 600; letter-spacing: 2px; }
+  .logo-text p { font-size: 11px; color: rgba(201,168,76,.6); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+
+  .header-title {
+    text-align: center;
+  }
+  .header-title h2 { font-family: 'Cinzel', serif; font-size: 20px; color: var(--gold-light); font-weight: 600; letter-spacing: 3px; text-transform: uppercase; }
+  .header-title p { font-size: 11px; color: rgba(245,240,232,.4); letter-spacing: 3px; margin-top: 3px; }
+
+  .prize-tabs {
+    display: flex; gap: 10px;
+  }
+  .prize-tab {
+    padding: 8px 18px; border-radius: 4px; cursor: pointer;
+    border: 1px solid rgba(201,168,76,.3);
+    background: transparent; color: rgba(201,168,76,.6);
+    font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 1px;
+    transition: all .2s;
+  }
+  .prize-tab:hover { border-color: var(--gold); color: var(--gold); }
+  .prize-tab.active {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
+    color: var(--navy); border-color: var(--gold); font-weight: 700;
+  }
+
+  /* ── MAIN AREA ── */
+  main {
+    display: grid;
+    grid-template-columns: 240px 1fr 240px;
+    gap: 24px;
+    align-items: center;
+    padding: 20px 0;
+  }
+
+  /* ── LEFT: PRIZE INFO ── */
+  .prize-info { display: flex; flex-direction: column; gap: 16px; }
+  .prize-card {
+    border: 1px solid rgba(201,168,76,.2);
+    border-radius: 8px; padding: 16px 20px;
+    background: rgba(255,255,255,.03);
+    transition: all .3s;
+    position: relative; overflow: hidden;
+  }
+  .prize-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--gold-dim);
+    transition: background .3s;
+  }
+  .prize-card.active { border-color: rgba(201,168,76,.6); background: rgba(201,168,76,.06); }
+  .prize-card.active::before { background: var(--gold); }
+  .prize-card .prize-rank { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-dim); }
+  .prize-card.active .prize-rank { color: var(--gold); }
+  .prize-card .prize-name { font-family: 'Cinzel', serif; font-size: 15px; color: var(--white); margin: 4px 0 2px; font-weight: 600; }
+  .prize-card .prize-qty { font-size: 12px; color: rgba(245,240,232,.4); }
+  .prize-card.active .prize-qty { color: rgba(201,168,76,.7); }
+  .prize-card .prize-remaining { font-size: 11px; color: var(--orange); margin-top: 6px; }
+
+  /* ── CENTER: DRUM ── */
+  .drum-area {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px;
+  }
+
+  .drum-wrapper {
+    position: relative;
+    width: 520px; height: 340px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Decorative ring */
+  .drum-ring {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(201,168,76,.2);
+    animation: ringPulse 3s ease-in-out infinite;
+  }
+  .drum-ring:nth-child(2) { inset: 12px; border-color: rgba(201,168,76,.12); animation-delay: .5s; }
+  @keyframes ringPulse { 0%,100%{opacity:.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.01)} }
+
+  /* Number display */
+  .drum-display {
+    position: relative; z-index: 2;
+    width: 440px; height: 210px;
+    background: linear-gradient(145deg, var(--navy-light), var(--navy-mid));
+    border: 1px solid rgba(201,168,76,.35);
+    border-radius: 14px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 0 80px rgba(201,168,76,.15), inset 0 1px 0 rgba(201,168,76,.1);
+    overflow: hidden;
+  }
+  .drum-display::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .drum-display::after {
+    content: ''; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+  }
+
+  .drum-label { font-size: 10px; letter-spacing: 4px; color: var(--gold-dim); text-transform: uppercase; margin-bottom: 8px; }
+  .drum-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 130px;
+    color: var(--gold-light);
+    letter-spacing: 14px;
+    line-height: 1;
+    text-shadow: 0 0 40px rgba(201,168,76,.6);
+    transition: all .05s;
+  }
+  .drum-number.idle { color: rgba(201,168,76,.25); }
+  .drum-number.spinning { animation: numberFlicker .08s infinite; }
+  .drum-number.winner {
+    color: var(--gold-light);
+    text-shadow: 0 0 40px rgba(201,168,76,.9), 0 0 80px rgba(201,168,76,.4);
+    animation: winnerPop .6s cubic-bezier(.2,1.5,.5,1) forwards;
+  }
+  @keyframes numberFlicker { 0%{opacity:.7} 50%{opacity:1} 100%{opacity:.8} }
+  @keyframes winnerPop {
+    0%{transform:scale(.8);opacity:0}
+    60%{transform:scale(1.08)}
+    100%{transform:scale(1);opacity:1}
+  }
+
+  /* DRAW BUTTON */
+  .btn-draw {
+    position: relative; overflow: hidden;
+    padding: 18px 64px; border-radius: 6px; cursor: pointer;
+    background: linear-gradient(135deg, var(--gold) 0%, #A8782A 100%);
+    color: var(--navy); border: none;
+    font-family: 'Bebas Neue', sans-serif; font-size: 28px;
+    letter-spacing: 6px; text-transform: uppercase;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 30px rgba(201,168,76,.35);
+  }
+  .btn-draw:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(201,168,76,.5); }
+  .btn-draw:active:not(:disabled) { transform: translateY(0); }
+  .btn-draw:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-draw::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,.15) 0%, transparent 60%);
+  }
+
+  .btn-reset {
+    padding: 10px 24px; border-radius: 4px; cursor: pointer;
+    background: transparent; color: rgba(245,240,232,.35); border: 1px solid rgba(245,240,232,.15);
+    font-family: 'Lato', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+    transition: all .2s;
+  }
+  .btn-reset:hover { border-color: rgba(245,240,232,.35); color: rgba(245,240,232,.6); }
+
+  /* ── RIGHT: WINNERS LOG ── */
+  .winners-panel { display: flex; flex-direction: column; gap: 12px; }
+  .winners-panel h3 {
+    font-family: 'Cinzel', serif; font-size: 13px; color: var(--gold-dim);
+    letter-spacing: 4px; text-transform: uppercase; font-weight: 600;
+    padding-bottom: 10px; border-bottom: 1px solid rgba(201,168,76,.15);
+  }
+  .winners-list { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; }
+  .winners-list::-webkit-scrollbar { width: 3px; }
+  .winners-list::-webkit-scrollbar-thumb { background: rgba(201,168,76,.3); border-radius: 2px; }
+  .winner-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 6px;
+    border: 1px solid rgba(201,168,76,.15);
+    background: rgba(255,255,255,.02);
+    animation: slideIn .3s ease forwards;
+  }
+  @keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+  .winner-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-gold { background: var(--gold); box-shadow: 0 0 8px rgba(201,168,76,.7); }
+  .dot-silver { background: #B0B8C8; box-shadow: 0 0 8px rgba(176,184,200,.5); }
+  .dot-bronze { background: var(--orange); box-shadow: 0 0 8px rgba(232,100,10,.5); }
+  .winner-num {
+    font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--gold-light);
+    letter-spacing: 4px; flex: 1;
+  }
+  .winner-prize { font-size: 10px; color: rgba(245,240,232,.4); letter-spacing: 1px; }
+
+  /* ── FOOTER ── */
+  footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0 18px;
+    border-top: 1px solid rgba(201,168,76,.15);
+  }
+  .footer-ornament { font-family: 'Cinzel', serif; font-size: 12px; color: rgba(201,168,76,.4); letter-spacing: 2px; }
+  .footer-tagline { font-family: 'Cinzel', serif; font-size: 14px; color: rgba(201,168,76,.55); letter-spacing: 2px; }
+
+  /* ── CONFETTI ── */
+  .confetti-piece {
+    position: fixed; width: 8px; height: 8px; top: -10px;
+    border-radius: 2px; pointer-events: none; z-index: 999;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ── WINNER OVERLAY ── */
+  #winner-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(13,27,46,.93);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .4s;
+  }
+  #winner-overlay.show { opacity: 1; pointer-events: all; }
+  .winner-card {
+    border: 1px solid var(--gold);
+    border-radius: 12px; padding: 60px 80px;
+    text-align: center; position: relative;
+    background: var(--navy-mid);
+    box-shadow: 0 0 80px rgba(201,168,76,.2);
+    transform: scale(.9); transition: transform .4s cubic-bezier(.2,1.5,.5,1);
+  }
+  #winner-overlay.show .winner-card { transform: scale(1); }
+  .winner-card::before, .winner-card::after {
+    content: ''; position: absolute;
+    left: 50%; transform: translateX(-50%);
+    height: 2px; width: 60px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .winner-card::before { top: 0; }
+  .winner-card::after { bottom: 0; }
+  .wc-subtitle { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 5px; text-transform: uppercase; color: var(--gold-dim); }
+  .wc-prize { font-family: 'Cinzel', serif; font-size: 24px; font-weight: 600; color: var(--gold-light); margin: 16px 0 8px; letter-spacing: 2px; }
+  .wc-number {
+    font-family: 'Bebas Neue', sans-serif; font-size: 120px;
+    color: var(--gold-light); line-height: 1;
+    text-shadow: 0 0 60px rgba(201,168,76,.8);
+    margin: 10px 0 20px;
+    letter-spacing: 14px;
+  }
+  .wc-label { font-size: 13px; color: rgba(245,240,232,.4); letter-spacing: 3px; text-transform: uppercase; }
+  .btn-close-overlay {
+    margin-top: 36px; padding: 14px 48px; border-radius: 5px; cursor: pointer;
+    background: transparent; color: var(--gold); border: 1px solid var(--gold);
+    font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 5px;
+    transition: all .2s;
+  }
+  .btn-close-overlay:hover { background: rgba(201,168,76,.1); }
+
+  /* Prize icon badges */
+  .prize-icon { font-size: 28px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<!-- Background particles canvas -->
+<canvas id="particles"></canvas>
+
+<!-- Mozambique map silhouette (SVG inline) -->
+<svg class="moz-map" viewBox="0 0 300 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path fill="#C9A84C" d="M150,10 L180,30 L200,60 L220,50 L240,80 L250,120 L245,160 L260,190 L255,230
+    L270,260 L265,300 L275,340 L270,380 L265,420 L255,460 L240,490 L220,520 L200,540
+    L180,560 L160,580 L140,590 L120,580 L100,560 L80,540 L60,510 L50,480 L55,450
+    L45,420 L40,390 L50,360 L55,330 L45,300 L50,270 L60,240 L55,210 L60,180
+    L70,150 L65,120 L80,90 L95,70 L110,50 L130,30 Z"/>
+</svg>
+
+<!-- PAGE LAYOUT -->
+<div class="page">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-area">
+      <div class="logo-badge">
+        <span class="anos">10</span>
+        <span class="anos-label">Anos</span>
+      </div>
+      <div class="logo-text">
+        <h1>e-Mola</h1>
+        <p>M-Mola, S.A. · Moçambique</p>
+      </div>
+    </div>
+
+    <div class="header-title">
+      <h2>Cartão de Sorteio</h2>
+      <p>Cerimónia Oficial do 10.º Aniversário · 14 de Agosto de 2026</p>
+    </div>
+
+    <div class="prize-tabs">
+      <button class="prize-tab active" data-tier="3" onclick="selectTier(3)">Giải Ba</button>
+      <button class="prize-tab" data-tier="2" onclick="selectTier(2)">Giải Nhì</button>
+      <button class="prize-tab" data-tier="1" onclick="selectTier(1)">Giải ĐB</button>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- LEFT: PRIZE CARDS -->
+    <aside class="prize-info">
+      <div class="prize-card" id="pc-1" onclick="selectTier(1)">
+        <div class="prize-icon">🏆</div>
+        <div class="prize-rank">Prémio Especial</div>
+        <div class="prize-name">Samsung Galaxy S26 Ultra</div>
+        <div class="prize-qty">Total: 3 prémios</div>
+        <div class="prize-remaining" id="rem-1">Restam: 3</div>
+      </div>
+      <div class="prize-card" id="pc-2" onclick="selectTier(2)">
+        <div class="prize-icon">🥈</div>
+        <div class="prize-rank">Segundo Prémio</div>
+        <div class="prize-name">AirPods Pro</div>
+        <div class="prize-qty">Total: 5 prémios</div>
+        <div class="prize-remaining" id="rem-2">Restam: 5</div>
+      </div>
+      <div class="prize-card active" id="pc-3" onclick="selectTier(3)">
+        <div class="prize-icon">🥉</div>
+        <div class="prize-rank">Terceiro Prémio</div>
+        <div class="prize-name">Samsung Power Bank</div>
+        <div class="prize-qty">Total: 10 prémios</div>
+        <div class="prize-remaining" id="rem-3">Restam: 10</div>
+      </div>
+    </aside>
+
+    <!-- CENTER: DRUM -->
+    <div class="drum-area">
+      <div class="drum-wrapper">
+        <div class="drum-ring"></div>
+        <div class="drum-ring"></div>
+        <div class="drum-display">
+          <div class="drum-label">Nº do Cartão</div>
+          <div class="drum-number idle" id="drum-number">- - - -</div>
+        </div>
+      </div>
+
+      <button class="btn-draw" id="btn-draw" onclick="startDraw()">SORTEAR</button>
+      <button class="btn-reset" onclick="resetAll()">↺ Reiniciar Sorteio</button>
+    </div>
+
+    <!-- RIGHT: WINNERS LOG -->
+    <aside class="winners-panel">
+      <h3>Vencedores</h3>
+      <div class="winners-list" id="winners-list">
+        <div style="font-size:12px;color:rgba(245,240,232,.25);letter-spacing:1px;margin-top:8px;text-align:center;">
+          Nenhum sorteio efectuado
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-ornament">✦ &nbsp; M-Mola, S.A. &nbsp; ✦</div>
+    <div class="footer-tagline">10 Anos Juntos — Democratizando Pagamentos</div>
+    <div class="footer-ornament">✦ &nbsp; Gloria Hotel, Maputo &nbsp; ✦</div>
+  </footer>
+
+</div>
+
+<!-- WINNER OVERLAY -->
+<div id="winner-overlay">
+  <div class="winner-card">
+    <div class="wc-subtitle" id="wc-subtitle">Prémio Especial</div>
+    <div class="wc-prize" id="wc-prize">Samsung Galaxy S26 Ultra</div>
+    <div class="wc-number" id="wc-number">0000</div>
+    <div class="wc-label">Cartão de Sorteio · Parabéns!</div>
+    <button class="btn-close-overlay" onclick="closeOverlay()">FECHAR</button>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const PRIZES = {
+  1: { name: 'Samsung Galaxy S26 Ultra', rank: 'Prémio Especial', total: 3, dot: 'dot-gold',   tier: 1 },
+  2: { name: 'AirPods Pro',              rank: 'Segundo Prémio',  total: 5, dot: 'dot-silver', tier: 2 },
+  3: { name: 'Samsung Power Bank',       rank: 'Terceiro Prémio', total:10, dot: 'dot-bronze', tier: 3 },
+};
+
+const TOTAL_GUESTS = 211;
+let remaining   = { 1: 3, 2: 5, 3: 10 };
+let drawnNums   = new Set();
+let currentTier = 3;
+let spinning    = false;
+let spinInterval;
+
+// ─── TIER SELECT ─────────────────────────────────────────────────────────────
+function selectTier(t) {
+  currentTier = t;
+  document.querySelectorAll('.prize-tab').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.prize-tab[data-tier="${t}"]`).classList.add('active');
+  document.querySelectorAll('.prize-card').forEach(c => c.classList.remove('active'));
+  document.getElementById(`pc-${t}`).classList.add('active');
+  resetDrum();
+}
+
+// ─── DRAW ────────────────────────────────────────────────────────────────────
+function startDraw() {
+  if (spinning) return;
+  const prize = PRIZES[currentTier];
+  if (remaining[currentTier] <= 0) {
+    alert('Todos os prémios desta categoria já foram sorteados!'); return;
+  }
+
+  spinning = true;
+  document.getElementById('btn-draw').disabled = true;
+  const num = document.getElementById('drum-number');
+  num.className = 'drum-number spinning';
+
+  // Spin phase
+  let spins = 0;
+  const spinDuration = 2200;
+  const interval = 80;
+  spinInterval = setInterval(() => {
+    num.textContent = pad(randUndrawn());
+    spins += interval;
+  }, interval);
+
+  // Slow down and stop
+  setTimeout(() => {
+    clearInterval(spinInterval);
+    const winner = pickWinner();
+    showResult(winner, prize);
+  }, spinDuration);
+}
+
+function randUndrawn() {
+  let n; do { n = Math.floor(Math.random() * TOTAL_GUESTS) + 1; } while(false);
+  return n;
+}
+
+function pickWinner() {
+  let n;
+  let attempts = 0;
+  do {
+    n = Math.floor(Math.random() * TOTAL_GUESTS) + 1;
+    attempts++;
+    if (attempts > 1000) break; // safety
+  } while(drawnNums.has(n));
+  drawnNums.add(n);
+  return n;
+}
+
+function showResult(number, prize) {
+  const num = document.getElementById('drum-number');
+  num.textContent = pad(number);
+  num.className = 'drum-number winner';
+
+  remaining[currentTier]--;
+  document.getElementById(`rem-${currentTier}`).textContent = `Restam: ${remaining[currentTier]}`;
+
+  // Log winner
+  addWinnerToLog(number, prize, currentTier);
+
+  // Show overlay after brief pause
+  setTimeout(() => {
+    document.getElementById('wc-subtitle').textContent = prize.rank;
+    document.getElementById('wc-prize').textContent = prize.name;
+    document.getElementById('wc-number').textContent = pad(number);
+    document.getElementById('winner-overlay').classList.add('show');
+    launchConfetti();
+  }, 800);
+}
+
+function addWinnerToLog(number, prize, tier) {
+  const list = document.getElementById('winners-list');
+  // Remove placeholder
+  const ph = list.querySelector('div[style]');
+  if (ph) ph.remove();
+
+  const item = document.createElement('div');
+  item.className = 'winner-item';
+  item.innerHTML = `
+    <div class="winner-dot ${prize.dot}"></div>
+    <div style="flex:1">
+      <div class="winner-num">${pad(number)}</div>
+      <div class="winner-prize">${prize.rank}</div>
+    </div>
+    <div style="font-size:10px;color:rgba(201,168,76,.4);letter-spacing:1px">T${tier}</div>
+  `;
+  list.prepend(item);
+}
+
+// ─── OVERLAY ─────────────────────────────────────────────────────────────────
+function closeOverlay() {
+  document.getElementById('winner-overlay').classList.remove('show');
+  spinning = false;
+  document.getElementById('btn-draw').disabled = false;
+}
+
+// ─── RESET ───────────────────────────────────────────────────────────────────
+function resetDrum() {
+  const num = document.getElementById('drum-number');
+  num.className = 'drum-number idle';
+  num.textContent = '– – – –';
+}
+
+function resetAll() {
+  if (!confirm('Reiniciar todo o sorteio? Todos os resultados serão apagados.')) return;
+  remaining = { 1:3, 2:5, 3:10 };
+  drawnNums.clear();
+  spinning = false;
+  clearInterval(spinInterval);
+  document.getElementById('btn-draw').disabled = false;
+  document.getElementById('winners-list').innerHTML =
+    '<div style="font-size:12px;color:rgba(245,240,232,.25);letter-spacing:1px;margin-top:8px;text-align:center;">Nenhum sorteio efectuado</div>';
+  [1,2,3].forEach(t => {
+    document.getElementById(`rem-${t}`).textContent = `Restam: ${PRIZES[t].total}`;
+  });
+  resetDrum();
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function pad(n) { return String(n).padStart(4, '0'); }
+
+// ─── CONFETTI ────────────────────────────────────────────────────────────────
+function launchConfetti() {
+  const colors = ['#C9A84C','#E8D08A','#8A6E30','#F5F0E8','#E8640A'];
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.width = (Math.random() * 8 + 4) + 'px';
+    el.style.height = (Math.random() * 12 + 4) + 'px';
+    el.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+    el.style.animationDelay = Math.random() * 0.8 + 's';
+    el.style.borderRadius = Math.random() > .5 ? '50%' : '2px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+  }
+}
+
+// ─── PARTICLES CANVAS ────────────────────────────────────────────────────────
+(function initParticles() {
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function create() {
+    particles = Array.from({length: 55}, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.8 + .4,
+      dx: (Math.random() - .5) * .3,
+      dy: -Math.random() * .6 - .2,
+      alpha: Math.random() * .4 + .1,
+    }));
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(201,168,76,${p.alpha})`;
+      ctx.fill();
+      p.x += p.dx; p.y += p.dy;
+      if (p.y < -5) { p.y = H + 5; p.x = Math.random() * W; }
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+    });
+    requestAnimationFrame(draw);
+  }
+
+  resize(); create(); draw();
+  window.addEventListener('resize', () => { resize(); create(); });
+})();
+</script>
+</body>
+</html>
