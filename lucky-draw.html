@@ -423,6 +423,64 @@
   }
   .btn-close-overlay:hover { background: rgba(201,168,76,.1); }
 
+  /* ── DRAMATIC REVEAL ── */
+  #reveal-wrap {
+    position: fixed; inset: 0; z-index: 600;
+    background: #000;
+    display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 0;
+  }
+  #reveal-wrap.active { display: flex; animation: revFadeIn .8s ease forwards; }
+  @keyframes revFadeIn { from{opacity:0} to{opacity:1} }
+
+  #reveal-flash {
+    position: absolute; inset: 0; pointer-events: none; z-index: 1;
+    background: radial-gradient(ellipse at center, rgba(255,248,220,1) 0%, rgba(201,168,76,.9) 35%, transparent 70%);
+    opacity: 0;
+  }
+  #reveal-flash.go { animation: flashGo .7s ease-out forwards; }
+  @keyframes flashGo { 0%{opacity:0} 18%{opacity:1} 100%{opacity:0} }
+
+  #reveal-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; }
+
+  #reveal-num {
+    font-family: 'Bebas Neue', serif;
+    font-size: clamp(140px, 28vw, 420px);
+    color: #E8D08A; line-height: .9; letter-spacing: .12em;
+    text-shadow: 0 0 80px rgba(201,168,76,1), 0 0 160px rgba(201,168,76,.6), 0 0 300px rgba(201,168,76,.3);
+    opacity: 0; transform: scale(.4);
+    transition: opacity .5s ease, transform .6s cubic-bezier(.175,.885,.32,1.275);
+  }
+  #reveal-num.show  { opacity: 1; transform: scale(1); }
+  #reveal-num.shrink { font-size: clamp(72px, 14vw, 180px); transition: font-size .8s ease; }
+
+  #reveal-details {
+    opacity: 0; transform: translateY(28px);
+    transition: opacity .6s ease, transform .6s ease;
+    text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px;
+    margin-top: 16px;
+  }
+  #reveal-details.show { opacity: 1; transform: translateY(0); }
+  #reveal-icon { font-size: clamp(60px, 10vw, 100px); animation: prizeFloat 3s ease-in-out infinite; }
+  #reveal-prize-name {
+    font-family: 'Cinzel', serif; font-size: clamp(16px, 2.5vw, 32px);
+    color: #E8D08A; letter-spacing: 4px; font-weight: 700;
+  }
+  #reveal-prize-rank {
+    font-family: 'Cinzel', serif; font-size: 11px;
+    letter-spacing: 7px; color: rgba(201,168,76,.5); text-transform: uppercase;
+  }
+  #reveal-close {
+    margin-top: 24px; padding: 14px 52px; border: none; border-radius: 6px;
+    background: linear-gradient(135deg, #C9A84C, #A8782A);
+    font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+    letter-spacing: 5px; color: #0D1B2E; cursor: pointer;
+    opacity: 0; transition: opacity .4s ease;
+  }
+  #reveal-close.show { opacity: 1; }
+  #reveal-close:hover { opacity: .85; }
+
   /* Prize card header */
   .prize-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
   .prize-icon { font-size: 32px; flex-shrink: 0; line-height: 1; }
@@ -592,6 +650,20 @@
   </div>
 </div>
 
+<!-- DRAMATIC REVEAL -->
+<div id="reveal-wrap">
+  <div id="reveal-flash"></div>
+  <div id="reveal-content">
+    <div id="reveal-num">042</div>
+    <div id="reveal-details">
+      <div id="reveal-icon">📱</div>
+      <div id="reveal-prize-name">Samsung Galaxy S26 Ultra</div>
+      <div id="reveal-prize-rank">Prémio Especial</div>
+      <button id="reveal-close" onclick="closeReveal()">FECHAR</button>
+    </div>
+  </div>
+</div>
+
 <!-- WINNER OVERLAY -->
 <div id="winner-overlay">
   <div class="winner-card">
@@ -679,6 +751,10 @@ function selectTier(t) {
   document.querySelectorAll('.prize-tab').forEach(b => b.classList.remove('active'));
   document.querySelector(`.prize-tab[data-tier="${t}"]`).classList.add('active');
   document.querySelectorAll('.prize-card').forEach(c => c.classList.remove('active'));
+  // Re-check button state for newly selected tier
+  const eligible = checkinPool.filter(x => !drawnNums.has(x)).length > 0
+                   && remaining[t] > 0;
+  document.getElementById('btn-draw').disabled = !eligible;
   document.getElementById(`pc-${t}`).classList.add('active');
   resetDrum();
 }
@@ -820,10 +896,51 @@ async function submitPin() {
   }
 }
 
-function pinCorrect() {
+async function pinCorrect() {
   adminPIN = pinEntry;
   document.getElementById('pin-overlay').style.display = 'none';
-  loadCheckins();
+  await restoreWinners();  // drawnNums phải có trước
+  loadCheckins();          // rồi mới tính eligible = checkin - drawn
+}
+
+async function restoreWinners() {
+  try {
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=stats');
+    const data = await res.json();
+    if (!data.winners || !data.winners.length) return;
+
+    // Rebuild drawnNums + remaining from Sheet data
+    for (const w of data.winners) {
+      const tier = parseInt(w.tier);
+      drawnNums.add(String(w.ticket));
+      if (remaining[tier] > 0) remaining[tier]--;
+    }
+    [1,2,3].forEach(t => {
+      document.getElementById(`rem-${t}`).textContent = `Restam: ${remaining[t]}`;
+    });
+
+    // Rebuild winners log
+    const list = document.getElementById('winners-list');
+    const ph = list.querySelector('.log-placeholder');
+    if (ph) ph.remove();
+    // data.winners is oldest-first; prepend so newest shows on top
+    for (const w of data.winners) {
+      const tier  = parseInt(w.tier);
+      const prize = PRIZES[tier];
+      if (!prize) continue;
+      const item = document.createElement('div');
+      item.className = 'winner-item';
+      item.innerHTML = `
+        <div class="winner-icon-sm tier-${tier}">${prize.icon}</div>
+        <div class="winner-info">
+          <div class="winner-num">${w.ticket}</div>
+          <div class="winner-prize">${prize.name}</div>
+        </div>
+        <div class="winner-tier-badge">${prize.rank.replace('Prémio ','').replace('Terceiro ','3.º ').replace('Segundo ','2.º ')}</div>
+      `;
+      list.prepend(item);
+    }
+  } catch (_) { /* silent — offline ok */ }
 }
 
 function pinWrong() {
@@ -844,25 +961,61 @@ function showResult(ticket, prize) {
   remaining[currentTier]--;
   document.getElementById(`rem-${currentTier}`).textContent = `Restam: ${remaining[currentTier]}`;
   addWinnerToLog(ticket, prize, currentTier);
-  postWinner(ticket, currentTier, prize.name);   // record to Google Sheet
+  postWinner(ticket, currentTier, prize.name);
+  startReveal(ticket, prize);
+}
 
+function startReveal(ticket, prize) {
+  const wrap    = document.getElementById('reveal-wrap');
+  const flash   = document.getElementById('reveal-flash');
+  const num     = document.getElementById('reveal-num');
+  const details = document.getElementById('reveal-details');
+  const closeBtn = document.getElementById('reveal-close');
+
+  // Populate content
+  num.textContent = ticket;
+  document.getElementById('reveal-icon').textContent = prize.icon;
+  document.getElementById('reveal-icon').style.setProperty('--wc-glow', prize.glow);
+  document.getElementById('reveal-prize-name').textContent = prize.name;
+  document.getElementById('reveal-prize-rank').textContent = prize.rank.toUpperCase();
+
+  // Reset state
+  num.classList.remove('show','shrink');
+  details.classList.remove('show');
+  closeBtn.classList.remove('show');
+  flash.classList.remove('go');
+
+  // Phase 1 — black screen fades in
+  wrap.classList.add('active');
+
+  // 800ms — gold flash burst
+  setTimeout(() => { flash.classList.add('go'); }, 800);
+
+  // 1100ms — huge number zooms in + sounds + effects
   setTimeout(() => {
-    document.getElementById('wc-subtitle').textContent = prize.rank;
-    document.getElementById('wc-prize').textContent = prize.name;
-    document.getElementById('wc-number').textContent = ticket;
-    const imgEl = document.getElementById('wc-prize-img');
-    imgEl.textContent = prize.icon;
-    imgEl.style.setProperty('--wc-glow', prize.glow);
-    document.getElementById('winner-overlay').classList.add('show');
+    num.classList.add('show');
     playWinSound(currentTier);
-    if (currentTier === 1) {
-      launchFireworks();
-      launchMoneyRain();
-    } else {
-      launchStreamers();
-      launchMoneyRain();
-    }
-  }, 500);
+    if (currentTier === 1) { launchFireworks(); launchMoneyRain(); }
+    else { launchStreamers(); launchMoneyRain(); }
+  }, 1100);
+
+  // 4200ms — number shrinks, prize details fade in
+  setTimeout(() => {
+    num.classList.add('shrink');
+    details.classList.add('show');
+  }, 4200);
+
+  // 5000ms — FECHAR button appears
+  setTimeout(() => { closeBtn.classList.add('show'); }, 5000);
+}
+
+function closeReveal() {
+  document.getElementById('reveal-wrap').classList.remove('active');
+  document.getElementById('winner-overlay').classList.remove('show');
+  spinning = false;
+  const stillEligible = checkinPool.filter(t => !drawnNums.has(t)).length > 0
+                        && remaining[currentTier] > 0;
+  document.getElementById('btn-draw').disabled = !stillEligible;
 }
 
 function addWinnerToLog(ticket, prize, tier) {

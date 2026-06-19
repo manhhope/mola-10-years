@@ -211,11 +211,12 @@ main{flex:1;padding:20px;max-width:480px;margin:0 auto;width:100%}
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3H37inrBT8kVg-cISJr3VB4p25Of6baP0hX-4GWDgzHvFKeNyciqN2soMiFY3ivq1/exec';
 // ════════════════════════════════════════════════════════════════
 
-let adminPIN    = '';
-let nfcActive   = false;
-let nfcReader   = null;
-let checkinCount = 0;
-const recent    = [];
+let adminPIN       = '';
+let nfcActive      = false;
+let nfcReader      = null;
+let nfcAbort       = null;   // AbortController để thực sự dừng scan
+let checkinCount   = 0;
+const recent       = [];
 
 // ── PIN ──────────────────────────────────────────────────────────
 document.getElementById('pin-input').addEventListener('keydown', e => {
@@ -248,15 +249,12 @@ function checkNFCSupport() {
 
 async function toggleScan() {
   if (!('NDEFReader' in window)) return;
-
-  if (nfcActive) {
-    stopScan();
-    return;
-  }
+  if (nfcActive) { stopScan(); return; }
 
   try {
+    nfcAbort  = new AbortController();
     nfcReader = new NDEFReader();
-    await nfcReader.scan();
+    await nfcReader.scan({ signal: nfcAbort.signal });
     nfcActive = true;
 
     const btn = document.getElementById('nfc-btn');
@@ -267,10 +265,9 @@ async function toggleScan() {
 
     nfcReader.addEventListener('reading', ({ message }) => {
       for (const record of message.records) {
-        if (record.recordType === 'url') {
-          const decoder = new TextDecoder();
-          const url     = decoder.decode(record.data);
-          const ticket  = extractTicket(url);
+        if (record.recordType === 'url' || record.recordType === 'text') {
+          const raw    = decodeNDEFRecord(record);
+          const ticket = extractTicket(raw);
           if (ticket) {
             stopScan();
             doCheckin(ticket);
@@ -278,7 +275,7 @@ async function toggleScan() {
           }
         }
       }
-      showResult('error', '?', '—', 'QR inválido — Cartão não reconhecido');
+      showResult('error', '?', '—', 'Cartão não reconhecido');
     });
 
     nfcReader.addEventListener('readingerror', () => {
@@ -286,12 +283,15 @@ async function toggleScan() {
     });
 
   } catch (err) {
-    showResult('error', '!', '—', 'NFC não disponível: ' + err.message);
+    if (err.name !== 'AbortError') {
+      showResult('error', '!', '—', 'NFC não disponível: ' + err.message);
+    }
   }
 }
 
 function stopScan() {
   nfcActive = false;
+  if (nfcAbort) { nfcAbort.abort(); nfcAbort = null; }
   nfcReader = null;
   const btn = document.getElementById('nfc-btn');
   btn.classList.remove('scanning');
@@ -300,11 +300,37 @@ function stopScan() {
   document.getElementById('nfc-status').style.color = 'rgba(201,168,76,.45)';
 }
 
-function extractTicket(url) {
+// Decode NDEF record đúng cách cho cả url và text
+function decodeNDEFRecord(record) {
+  if (record.recordType === 'url') {
+    return new TextDecoder().decode(record.data);
+  }
+  if (record.recordType === 'text') {
+    // Text record format: [status_byte][lang_code...][text...]
+    // status_byte bits 5-0 = language code length
+    const statusByte = record.data.getUint8(0);
+    const langLen    = statusByte & 0x3f;
+    const encoding   = (statusByte & 0x80) ? 'utf-16' : 'utf-8';
+    const textBytes  = record.data.buffer.slice(
+      record.data.byteOffset + 1 + langLen,
+      record.data.byteOffset + record.data.byteLength
+    );
+    return new TextDecoder(encoding).decode(textBytes);
+  }
+  return '';
+}
+
+function extractTicket(raw) {
+  raw = (raw || '').trim();
+  // Case 1: URL → lấy ?ticket=
   try {
-    const u = new URL(url);
-    return u.searchParams.get('ticket');
-  } catch { return null; }
+    const u = new URL(raw);
+    const t = u.searchParams.get('ticket');
+    if (t) return t.padStart(3, '0');
+  } catch {}
+  // Case 2: text thuần là số vé (vd: "042" hoặc "42")
+  if (/^\d{1,3}$/.test(raw)) return raw.padStart(3, '0');
+  return null;
 }
 
 // ── MANUAL CHECK-IN ───────────────────────────────────────────────
@@ -348,6 +374,8 @@ async function doCheckin(ticket) {
       checkinCount++;
       document.getElementById('counter').textContent = checkinCount;
       addToRecent(ticket, data.name);
+      // Auto-restart NFC scan sau 2.5s
+      setTimeout(() => toggleScan(), 2500);
     }
   } catch (err) {
     setLoading(false);
