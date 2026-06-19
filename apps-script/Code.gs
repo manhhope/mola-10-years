@@ -13,8 +13,16 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-const ADMIN_PIN     = '2026';   // PIN cho ban tổ chức (đổi trước ngày sự kiện)
 const TOTAL_TICKETS = 211;      // Tổng số khách mời
+
+// PIN đọc từ sheet "Config" (ô B1) — có thể đổi trực tiếp trên Sheet
+function getAdminPIN() {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Config');
+    if (sheet) return String(sheet.getRange('B1').getValue()) || '2026';
+  } catch(_) {}
+  return '2026';
+}
 
 // Sheet names
 const SH_GUESTS  = 'Convidados';
@@ -40,10 +48,11 @@ function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
     switch (data.action) {
-      case 'rsvp':    return jsonOut(handleRSVP(data));
-      case 'checkin': return jsonOut(handleCheckin(data));
-      case 'winner':  return jsonOut(handleWinner(data));
-      default:        return jsonOut({ error: 'Acção desconhecida' });
+      case 'rsvp':         return jsonOut(handleRSVP(data));
+      case 'checkin':      return jsonOut(handleCheckin(data));
+      case 'winner':       return jsonOut(handleWinner(data));
+      case 'removeWinner': return jsonOut(handleRemoveWinner(data));
+      default:             return jsonOut({ error: 'Acção desconhecida' });
     }
   } catch (err) {
     return jsonOut({ error: err.message });
@@ -73,7 +82,7 @@ function handleRSVP(data) {
 
 // ── CHECK-IN ──────────────────────────────────────────────────────────────────
 function handleCheckin(data) {
-  if (String(data.pin) !== String(ADMIN_PIN)) {
+  if (String(data.pin) !== String(getAdminPIN())) {
     return { error: 'PIN incorreto' };
   }
 
@@ -100,7 +109,7 @@ function handleCheckin(data) {
 
 // ── WINNER ────────────────────────────────────────────────────────────────────
 function handleWinner(data) {
-  if (String(data.pin) !== String(ADMIN_PIN)) {
+  if (String(data.pin) !== String(getAdminPIN())) {
     return { error: 'PIN incorreto' };
   }
   const sheet = getSheet(SH_WINNERS);
@@ -111,6 +120,20 @@ function handleWinner(data) {
     data.prize
   ]);
   return { success: true };
+}
+
+// ── REMOVE WINNER (resorteio) ─────────────────────────────────────────────────
+function handleRemoveWinner(data) {
+  if (String(data.pin) !== String(getAdminPIN())) return { error: 'PIN incorreto' };
+  const sheet  = getSheet(SH_WINNERS);
+  const values = sheet.getDataRange().getValues();
+  for (let i = values.length - 1; i >= 1; i--) {
+    if (String(values[i][1]) === String(pad(data.ticket))) {
+      sheet.deleteRow(i + 1);
+      return { success: true, removed: data.ticket };
+    }
+  }
+  return { error: 'Vencedor não encontrado' };
 }
 
 // ── GET CHECKINS ──────────────────────────────────────────────────────────────
@@ -185,7 +208,23 @@ function getGuest(ticket) {
 function setup() {
   setupGuestsSheet();
   setupWinnersSheet();
+  setupConfigSheet();
   Logger.log('✅ Setup completo! ' + TOTAL_TICKETS + ' bilhetes criados.');
+}
+
+function setupConfigSheet() {
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet   = ss.getSheetByName('Config');
+  if (!sheet) sheet = ss.insertSheet('Config');
+  sheet.clear();
+  const data = [['Configuração', 'Valor'], ['ADMIN_PIN', '2026']];
+  sheet.getRange(1, 1, data.length, 2).setValues(data);
+  sheet.getRange(1, 1, 1, 2).setFontWeight('bold').setBackground('#0D1B2E').setFontColor('#C9A84C');
+  sheet.getRange(2, 1).setFontColor('#888888');
+  sheet.getRange(2, 2).setFontWeight('bold').setFontColor('#C9A84C').setFontSize(14);
+  sheet.setColumnWidth(1, 160);
+  sheet.setColumnWidth(2, 120);
+  Logger.log('✅ Sheet "Config" criada. PIN padrão: 2026');
 }
 
 function setupGuestsSheet() {

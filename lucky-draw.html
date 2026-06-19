@@ -472,7 +472,7 @@
     letter-spacing: 7px; color: rgba(201,168,76,.5); text-transform: uppercase;
   }
   #reveal-close {
-    margin-top: 24px; padding: 14px 52px; border: none; border-radius: 6px;
+    padding: 14px 52px; border: none; border-radius: 6px;
     background: linear-gradient(135deg, #C9A84C, #A8782A);
     font-family: 'Bebas Neue', sans-serif; font-size: 22px;
     letter-spacing: 5px; color: #0D1B2E; cursor: pointer;
@@ -484,6 +484,7 @@
   /* Prize card header */
   .prize-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
   .prize-icon { font-size: 32px; flex-shrink: 0; line-height: 1; }
+  .prize-img-thumb { width: 44px; height: 44px; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 6px rgba(0,0,0,.4)); }
 
   /* Eligibility bar */
   .eligibility-bar {
@@ -548,7 +549,7 @@
     <aside class="prize-info">
       <div class="prize-card" id="pc-1" onclick="selectTier(1)">
         <div class="prize-card-header">
-          <div class="prize-icon">📱</div>
+          <img class="prize-img-thumb" src="prize/Samsung_Galaxy_S26_Ultra_cobalt_violet-full-product-front-600.png" alt="Samsung Galaxy S26 Ultra">
           <div>
             <div class="prize-rank">Prémio Especial</div>
             <div class="prize-name">Samsung Galaxy S26 Ultra</div>
@@ -559,7 +560,7 @@
       </div>
       <div class="prize-card" id="pc-2" onclick="selectTier(2)">
         <div class="prize-card-header">
-          <div class="prize-icon">🎧</div>
+          <img class="prize-img-thumb" src="prize/airpod-pro.png" alt="AirPods Pro">
           <div>
             <div class="prize-rank">Segundo Prémio</div>
             <div class="prize-name">AirPods Pro</div>
@@ -570,7 +571,7 @@
       </div>
       <div class="prize-card active" id="pc-3" onclick="selectTier(3)">
         <div class="prize-card-header">
-          <div class="prize-icon">🔋</div>
+          <img class="prize-img-thumb" src="prize/samsung-power-bank-20000.avif" alt="Samsung Power Bank">
           <div>
             <div class="prize-rank">Terceiro Prémio</div>
             <div class="prize-name">Samsung Power Bank</div>
@@ -656,10 +657,13 @@
   <div id="reveal-content">
     <div id="reveal-num">042</div>
     <div id="reveal-details">
-      <div id="reveal-icon">📱</div>
+      <img id="reveal-img" src="" alt="" style="max-height:clamp(140px,22vh,260px);max-width:80vw;object-fit:contain;filter:drop-shadow(0 0 40px rgba(201,168,76,.7));animation:prizeFloat 3s ease-in-out infinite">
       <div id="reveal-prize-name">Samsung Galaxy S26 Ultra</div>
       <div id="reveal-prize-rank">Prémio Especial</div>
-      <button id="reveal-close" onclick="closeReveal()">FECHAR</button>
+      <div style="display:flex;gap:16px;margin-top:8px">
+        <button id="reveal-redraw" onclick="redraw()" style="padding:14px 52px;border:1px solid rgba(201,168,76,.4);border-radius:6px;background:transparent;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:5px;color:rgba(201,168,76,.6);cursor:pointer;opacity:0;transition:opacity .4s">↺ RESORTEIO</button>
+        <button id="reveal-close" onclick="closeReveal()">FECHAR</button>
+      </div>
     </div>
   </div>
 </div>
@@ -685,9 +689,9 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3H37inrBT8kVg
 
 // ─── DATA ───────────────────────────────────────────────────────────────────
 const PRIZES = {
-  1: { name: 'Samsung Galaxy S26 Ultra', rank: 'Prémio Especial', total: 3, dot: 'dot-gold',   tier: 1, icon: '📱', accent: '#C9A84C', glow: 'rgba(201,168,76,.8)' },
-  2: { name: 'AirPods Pro',              rank: 'Segundo Prémio',  total: 5, dot: 'dot-silver', tier: 2, icon: '🎧', accent: '#B0B8C8', glow: 'rgba(176,184,200,.7)' },
-  3: { name: 'Samsung Power Bank',       rank: 'Terceiro Prémio', total:10, dot: 'dot-bronze', tier: 3, icon: '🔋', accent: '#E8640A', glow: 'rgba(232,100,10,.7)' },
+  1: { name: 'Samsung Galaxy S26 Ultra', rank: 'Prémio Especial', total: 3, dot: 'dot-gold',   tier: 1, icon: '📱', img: 'prize/Samsung_Galaxy_S26_Ultra_cobalt_violet-full-product-front-600.png', accent: '#C9A84C', glow: 'rgba(201,168,76,.8)' },
+  2: { name: 'AirPods Pro',              rank: 'Segundo Prémio',  total: 5, dot: 'dot-silver', tier: 2, icon: '🎧', img: 'prize/airpod-pro.png',                                                accent: '#B0B8C8', glow: 'rgba(176,184,200,.7)' },
+  3: { name: 'Samsung Power Bank',       rank: 'Terceiro Prémio', total:10, dot: 'dot-bronze', tier: 3, icon: '🔋', img: 'prize/samsung-power-bank-20000.avif',                                     accent: '#E8640A', glow: 'rgba(232,100,10,.7)' },
 };
 
 let checkinPool = [];   // filled from Apps Script after PIN unlock
@@ -786,10 +790,8 @@ function startDraw() {
     const progress = Math.max(0, (step - FAST) / (TOTAL - FAST));
     const delay = isFast ? 70 : Math.min(70 + progress * progress * 600, 680);
 
-    // Show random num during fast phase — pick from pool for authenticity
-    num.textContent = (step < TOTAL - 3)
-      ? eligible[Math.floor(Math.random() * eligible.length)]
-      : winner;
+    // Always show random — NEVER reveal winner on drum
+    num.textContent = eligible[Math.floor(Math.random() * eligible.length)];
 
     if (isFast) { playTick(); }
     else { playSlowTick(0.1 + progress * 0.15); }
@@ -797,8 +799,15 @@ function startDraw() {
     if (step < TOTAL) {
       spinTimer = setTimeout(tick, delay);
     } else {
-      num.textContent = winner;
-      num.className = 'drum-number winner';
+      // Drum fade out → đừng lộ số → reveal đen bùng lên
+      num.style.transition = 'opacity 0.25s';
+      num.style.opacity = '0';
+      setTimeout(() => {
+        num.textContent = '– – –';
+        num.className = 'drum-number idle';
+        num.style.opacity = '';
+        num.style.transition = '';
+      }, 250);
       showResult(winner, prize);
     }
   }
@@ -820,7 +829,7 @@ async function loadCheckins() {
   try {
     const res = await fetch(APPS_SCRIPT_URL + '?action=checkins');
     const data = await res.json();
-    checkinPool = data.tickets || [];
+    checkinPool = (data.tickets || []).map(t => String(t).padStart(3,'0'));
     const eligible = checkinPool.filter(t => !drawnNums.has(t)).length;
     bar.className = 'eligibility-bar ' + (eligible > 0 ? 'ready' : 'empty');
     status.textContent = eligible > 0
@@ -912,7 +921,7 @@ async function restoreWinners() {
     // Rebuild drawnNums + remaining from Sheet data
     for (const w of data.winners) {
       const tier = parseInt(w.tier);
-      drawnNums.add(String(w.ticket));
+      drawnNums.add(String(w.ticket).padStart(3,'0'));
       if (remaining[tier] > 0) remaining[tier]--;
     }
     [1,2,3].forEach(t => {
@@ -931,7 +940,7 @@ async function restoreWinners() {
       const item = document.createElement('div');
       item.className = 'winner-item';
       item.innerHTML = `
-        <div class="winner-icon-sm tier-${tier}">${prize.icon}</div>
+        <div class="winner-icon-sm tier-${tier}"><img src="${prize.img}" alt="${prize.name}" style="width:100%;height:100%;object-fit:contain;"></div>
         <div class="winner-info">
           <div class="winner-num">${w.ticket}</div>
           <div class="winner-prize">${prize.name}</div>
@@ -958,6 +967,8 @@ document.addEventListener('keydown', e => {
 });
 
 function showResult(ticket, prize) {
+  lastWinnerTicket = ticket;
+  lastWinnerTier   = currentTier;
   remaining[currentTier]--;
   document.getElementById(`rem-${currentTier}`).textContent = `Restam: ${remaining[currentTier]}`;
   addWinnerToLog(ticket, prize, currentTier);
@@ -974,8 +985,8 @@ function startReveal(ticket, prize) {
 
   // Populate content
   num.textContent = ticket;
-  document.getElementById('reveal-icon').textContent = prize.icon;
-  document.getElementById('reveal-icon').style.setProperty('--wc-glow', prize.glow);
+  document.getElementById('reveal-img').src = prize.img;
+  document.getElementById('reveal-img').alt = prize.name;
   document.getElementById('reveal-prize-name').textContent = prize.name;
   document.getElementById('reveal-prize-rank').textContent = prize.rank.toUpperCase();
 
@@ -984,6 +995,7 @@ function startReveal(ticket, prize) {
   details.classList.remove('show');
   closeBtn.classList.remove('show');
   flash.classList.remove('go');
+  document.getElementById('reveal-redraw').style.opacity = '0';
 
   // Phase 1 — black screen fades in
   wrap.classList.add('active');
@@ -1005,8 +1017,40 @@ function startReveal(ticket, prize) {
     details.classList.add('show');
   }, 4200);
 
-  // 5000ms — FECHAR button appears
-  setTimeout(() => { closeBtn.classList.add('show'); }, 5000);
+  // 5000ms — buttons appear
+  setTimeout(() => {
+    closeBtn.classList.add('show');
+    document.getElementById('reveal-redraw').style.opacity = '1';
+  }, 5000);
+}
+
+// Resorteio — người trúng không có mặt, quay lại giải này
+let lastWinnerTicket = null;
+let lastWinnerTier   = null;
+
+function redraw() {
+  if (!confirm('Quay lại giải này? Số ' + lastWinnerTicket + ' sẽ bị loại.')) return;
+  // Restore prize count (ticket stays in drawnNums — they had their chance)
+  remaining[lastWinnerTier]++;
+  document.getElementById(`rem-${lastWinnerTier}`).textContent = `Restam: ${remaining[lastWinnerTier]}`;
+  // Remove from winners log UI
+  const list = document.getElementById('winners-list');
+  const items = list.querySelectorAll('.winner-item');
+  for (const item of items) {
+    if (item.querySelector('.winner-num')?.textContent === lastWinnerTicket) {
+      item.remove(); break;
+    }
+  }
+  // Remove from Sheet
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action: 'removeWinner', ticket: lastWinnerTicket, pin: adminPIN })
+  }).catch(() => {});
+  // Close reveal and redraw same tier
+  document.getElementById('reveal-wrap').classList.remove('active');
+  spinning = false;
+  setTimeout(() => startDraw(), 300);
 }
 
 function closeReveal() {
@@ -1026,7 +1070,7 @@ function addWinnerToLog(ticket, prize, tier) {
   const item = document.createElement('div');
   item.className = 'winner-item';
   item.innerHTML = `
-    <div class="winner-icon-sm tier-${tier}">${prize.icon}</div>
+    <div class="winner-icon-sm tier-${tier}"><img src="${prize.img}" alt="${prize.name}" style="width:100%;height:100%;object-fit:contain;"></div>
     <div class="winner-info">
       <div class="winner-num">${ticket}</div>
       <div class="winner-prize">${prize.name}</div>
