@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0D1B2E">
+<title>Convite – 10 Anos M-Mola · Invitation – 10 Years M-Mola</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0D1B2E;--navy-mid:#16213E;--navy-light:#1E2F4D;
+  --gold:#C9A84C;--gold-light:#E8D08A;--gold-dim:#8A6E30;
+  --white:#F5F0E8;--orange:#E8640A;
+}
+html{scroll-behavior:smooth}
+body{background:var(--navy);color:var(--white);font-family:'Lato',sans-serif;
+  max-width:480px;margin:0 auto;overflow-x:hidden}
+
+/* ── LANG TOGGLE ── */
+.lang-toggle{
+  position:fixed;top:16px;right:16px;z-index:999;
+  display:flex;gap:2px;
+  background:rgba(13,27,46,.85);border:1px solid rgba(201,168,76,.3);
+  border-radius:20px;padding:4px;backdrop-filter:blur(8px);
+}
+.lang-btn{
+  padding:5px 14px;border-radius:16px;border:none;cursor:pointer;
+  font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;
+  font-weight:600;transition:all .2s;background:transparent;
+  color:rgba(201,168,76,.45);
+}
+.lang-btn.active{background:var(--gold);color:var(--navy)}
+
+/* ── UTILITIES ── */
+.gold{color:var(--gold)}
+.gold-light{color:var(--gold-light)}
+.divider{display:flex;align-items:center;gap:12px;margin:18px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,168,76,.3),transparent)}
+.divider span{font-size:12px;color:rgba(201,168,76,.4);letter-spacing:4px}
+
+/* ── HERO ── */
+.hero{
+  min-height:100svh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:48px 32px;position:relative;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 60%,rgba(201,168,76,.08) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-map{
+  position:absolute;right:-40px;bottom:-20px;width:260px;opacity:.05;
+  pointer-events:none;
+}
+.seal{
+  width:110px;height:110px;border-radius:50%;
+  border:2px solid var(--gold);
+  background:var(--navy-mid);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  box-shadow:0 0 40px rgba(201,168,76,.25),inset 0 0 20px rgba(201,168,76,.05);
+  margin:0 auto 32px;
+  animation:sealGlow 3s ease-in-out infinite;
+}
+@keyframes sealGlow{0%,100%{box-shadow:0 0 30px rgba(201,168,76,.2)}
+  50%{box-shadow:0 0 60px rgba(201,168,76,.45)}}
+.seal .num{font-family:'Cinzel',serif;font-size:44px;font-weight:900;
+  color:var(--gold);line-height:1}
+.seal .label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:5px;
+  color:var(--gold-light);text-transform:uppercase;margin-top:2px}
+
+.hero-brand{font-family:'Cinzel',serif;font-size:38px;font-weight:900;
+  color:var(--gold);letter-spacing:6px;margin-bottom:6px}
+.hero-tagline{font-family:'Cinzel',serif;font-size:13px;color:rgba(201,168,76,.6);
+  letter-spacing:4px;font-style:italic;margin-bottom:32px}
+.hero-invite-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:6px;
+  text-transform:uppercase;color:rgba(245,240,232,.35);margin-bottom:10px}
+.hero-invite-text{font-size:15px;line-height:1.8;color:rgba(245,240,232,.7);
+  font-weight:300;font-style:italic;margin-bottom:36px;padding:0 8px}
+
+.hero-event-card{
+  width:100%;border:1px solid rgba(201,168,76,.3);border-radius:12px;
+  padding:24px;background:rgba(255,255,255,.03);backdrop-filter:blur(4px);
+}
+.hero-event-card .event-row{
+  display:flex;align-items:center;gap:14px;padding:10px 0;
+  border-bottom:1px solid rgba(201,168,76,.1);
+}
+.hero-event-card .event-row:last-child{border-bottom:none}
+.event-icon{width:36px;height:36px;border-radius:8px;
+  background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.event-icon svg{width:18px;height:18px;stroke:var(--gold);fill:none;stroke-width:1.5}
+.event-info .label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:4px;
+  text-transform:uppercase;color:rgba(201,168,76,.45);margin-bottom:3px}
+.event-info .value{font-family:'Cinzel',serif;font-size:14px;color:var(--white);
+  font-weight:600;letter-spacing:1px}
+
+.scroll-hint{margin-top:40px;display:flex;flex-direction:column;
+  align-items:center;gap:8px;animation:bounce 2s infinite}
+.scroll-hint span{font-size:9px;letter-spacing:4px;color:rgba(245,240,232,.25);
+  text-transform:uppercase;font-family:'Cinzel',serif}
+.scroll-arrow{width:1px;height:32px;background:linear-gradient(180deg,rgba(201,168,76,.4),transparent)}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* ── SECTION BASE ── */
+section{padding:64px 28px}
+.section-tag{font-family:'Cinzel',serif;font-size:9px;letter-spacing:6px;
+  text-transform:uppercase;color:rgba(201,168,76,.5);margin-bottom:10px}
+.section-title{font-family:'Cinzel',serif;font-size:26px;font-weight:700;
+  color:var(--gold-light);letter-spacing:2px;line-height:1.3;margin-bottom:6px}
+.section-sub{font-size:13px;color:rgba(245,240,232,.45);letter-spacing:1px;
+  font-style:italic;line-height:1.7}
+
+/* ── ABOUT ── */
+.about-text{font-size:15px;line-height:1.9;color:rgba(245,240,232,.65);
+  font-weight:300;margin-top:20px}
+.about-text strong{color:var(--gold-light);font-weight:600}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:28px}
+.stat-card{border:1px solid rgba(201,168,76,.2);border-radius:10px;
+  padding:20px 16px;background:rgba(255,255,255,.025);text-align:center}
+.stat-num{font-family:'Cinzel',serif;font-size:32px;font-weight:900;
+  color:var(--gold);line-height:1;margin-bottom:6px}
+.stat-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;
+  text-transform:uppercase;color:rgba(245,240,232,.35);line-height:1.4}
+
+/* ── FEATURES ── */
+.features{padding:0 28px 64px}
+.feature-card{
+  border:1px solid rgba(201,168,76,.15);border-radius:12px;
+  padding:24px;background:rgba(255,255,255,.02);margin-bottom:14px;
+  display:flex;gap:18px;align-items:flex-start;
+  opacity:0;transform:translateY(20px);
+  transition:opacity .6s,transform .6s;
+}
+.feature-card.visible{opacity:1;transform:translateY(0)}
+.feature-icon{flex-shrink:0;width:52px;height:52px;border-radius:12px;
+  background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);
+  display:flex;align-items:center;justify-content:center}
+.feature-icon svg{width:26px;height:26px}
+.feature-body .ftitle{font-family:'Cinzel',serif;font-size:14px;font-weight:700;
+  color:var(--gold-light);letter-spacing:1px;margin-bottom:6px}
+.feature-body .fdesc{font-size:13px;color:rgba(245,240,232,.5);
+  line-height:1.7;font-weight:300}
+.feature-badge{display:inline-block;margin-top:8px;padding:3px 10px;
+  border-radius:20px;border:1px solid rgba(201,168,76,.3);
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;
+  color:var(--gold);text-transform:uppercase}
+
+/* ── TIMELINE ── */
+.timeline-section{padding:64px 28px;background:rgba(255,255,255,.015)}
+.timeline{position:relative;margin-top:32px;padding-left:24px}
+.timeline::before{content:'';position:absolute;left:7px;top:8px;bottom:8px;
+  width:1px;background:linear-gradient(180deg,transparent,rgba(201,168,76,.4),transparent)}
+.tl-item{position:relative;margin-bottom:28px;
+  opacity:0;transform:translateX(-16px);
+  transition:opacity .5s,transform .5s}
+.tl-item.visible{opacity:1;transform:translateX(0)}
+.tl-dot{position:absolute;left:-24px;top:4px;
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid var(--gold-dim);background:var(--navy)}
+.tl-item.highlight .tl-dot{border-color:var(--gold);
+  box-shadow:0 0 12px rgba(201,168,76,.5)}
+.tl-time{font-family:'Cinzel',serif;font-size:11px;letter-spacing:3px;
+  color:var(--gold-dim);margin-bottom:4px;text-transform:uppercase}
+.tl-item.highlight .tl-time{color:var(--gold)}
+.tl-event{font-family:'Cinzel',serif;font-size:14px;font-weight:600;
+  color:var(--white);margin-bottom:3px;line-height:1.4}
+.tl-item.highlight .tl-event{color:var(--gold-light)}
+.tl-desc{font-size:12px;color:rgba(245,240,232,.4);font-style:italic;line-height:1.6}
+
+/* ── GALLERY ── */
+.gallery-section{padding:64px 28px}
+.gallery-scroll{display:flex;gap:14px;overflow-x:auto;padding-bottom:12px;
+  -webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory;scrollbar-width:none}
+.gallery-scroll::-webkit-scrollbar{display:none}
+.gallery-card{flex-shrink:0;width:220px;scroll-snap-align:start;
+  border:1px solid rgba(201,168,76,.2);border-radius:12px;overflow:hidden;
+  background:var(--navy-mid)}
+.gallery-card img,.gallery-card .gallery-img{width:100%;height:160px;object-fit:cover}
+.gallery-img{background:var(--navy-light);display:flex;align-items:center;justify-content:center}
+.gallery-cap{padding:14px;font-family:'Cinzel',serif;font-size:11px;
+  letter-spacing:2px;color:rgba(201,168,76,.6);text-transform:uppercase;line-height:1.5}
+
+/* ── RSVP ── */
+.rsvp-section{
+  padding:64px 28px;
+  background:linear-gradient(180deg,transparent,rgba(201,168,76,.05),transparent);
+}
+.rsvp-card{
+  border:1px solid rgba(201,168,76,.35);border-radius:16px;
+  padding:36px 24px;text-align:center;
+  background:rgba(255,255,255,.03);position:relative;overflow:hidden;
+}
+.rsvp-card::before,.rsvp-card::after{
+  content:'';position:absolute;left:50%;transform:translateX(-50%);
+  height:1px;width:80px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.rsvp-card::before{top:0}.rsvp-card::after{bottom:0}
+.rsvp-title{font-family:'Cinzel',serif;font-size:22px;font-weight:700;
+  color:var(--gold-light);letter-spacing:3px;margin-bottom:6px}
+.rsvp-sub{font-size:13px;color:rgba(245,240,232,.45);font-style:italic;
+  line-height:1.7;margin-bottom:16px}
+.rsvp-deadline{font-family:'Cinzel',serif;font-size:10px;letter-spacing:4px;
+  color:var(--orange);text-transform:uppercase;margin-bottom:28px}
+.rsvp-buttons{display:flex;gap:12px;justify-content:center}
+.btn-yes{
+  flex:1;padding:16px;border-radius:8px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--gold),#A8782A);
+  color:var(--navy);font-family:'Cinzel',serif;font-size:14px;
+  font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  transition:transform .15s,box-shadow .15s;
+  box-shadow:0 4px 20px rgba(201,168,76,.3);
+}
+.btn-yes:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(201,168,76,.45)}
+.btn-no{
+  flex:1;padding:16px;border-radius:8px;cursor:pointer;
+  background:transparent;color:rgba(245,240,232,.45);
+  border:1px solid rgba(245,240,232,.2);
+  font-family:'Cinzel',serif;font-size:13px;letter-spacing:2px;
+  text-transform:uppercase;transition:all .2s;
+}
+.btn-no:hover{border-color:rgba(245,240,232,.4);color:rgba(245,240,232,.7)}
+.rsvp-note{margin-top:20px;font-size:11px;color:rgba(245,240,232,.25);
+  letter-spacing:1px;font-style:italic;line-height:1.6}
+.confirmed{display:none;text-align:center;padding:8px 0}
+.confirmed .c-icon{font-size:48px;margin-bottom:16px}
+.confirmed .c-title{font-family:'Cinzel',serif;font-size:20px;font-weight:700;
+  color:var(--gold-light);letter-spacing:3px;margin-bottom:8px}
+.confirmed .c-text{font-size:13px;color:rgba(245,240,232,.5);
+  font-style:italic;line-height:1.7}
+
+/* ── FOOTER ── */
+footer{
+  padding:40px 28px 60px;text-align:center;
+  border-top:1px solid rgba(201,168,76,.15);
+}
+.footer-logo{font-family:'Cinzel',serif;font-size:24px;font-weight:700;
+  color:var(--gold);letter-spacing:5px;margin-bottom:4px}
+.footer-tag{font-family:'Cinzel',serif;font-size:10px;letter-spacing:4px;
+  color:rgba(201,168,76,.4);font-style:italic;margin-bottom:24px}
+.footer-contact{font-size:12px;color:rgba(245,240,232,.35);letter-spacing:1px;margin-bottom:8px}
+.footer-copy{font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;
+  color:rgba(201,168,76,.2);text-transform:uppercase;margin-top:20px}
+
+/* ── ANIMATIONS ── */
+.fade-up{opacity:0;transform:translateY(24px);
+  transition:opacity .7s ease,transform .7s ease}
+.fade-up.visible{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- ── LANGUAGE TOGGLE ─────────────────────────────────────────────────── -->
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-pt" onclick="setLang('pt')">PT</button>
+  <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+</div>
+
+<!-- ══ HERO ══════════════════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <svg class="hero-map" viewBox="0 0 300 620" fill="none">
+    <path fill="#C9A84C" d="M150,10 L180,30 L200,60 L220,50 L240,80 L250,120 L245,160 L260,190
+      L255,230 L270,260 L265,300 L275,340 L270,380 L265,420 L255,460 L240,490 L220,520
+      L200,540 L180,560 L160,580 L140,590 L120,580 L100,560 L80,540 L60,510 L50,480
+      L55,450 L45,420 L40,390 L50,360 L55,330 L45,300 L50,270 L60,240 L55,210 L60,180
+      L70,150 L65,120 L80,90 L95,70 L110,50 L130,30 Z"/>
+  </svg>
+
+  <div class="seal">
+    <span class="num">10</span>
+    <span class="label" data-i18n="sealLabel">Anos</span>
+  </div>
+
+  <div class="hero-brand">e-Mola</div>
+  <div class="hero-tagline" data-i18n="heroTagline">10 Anos Juntos</div>
+
+  <div class="hero-invite-label" data-i18n="inviteLabel">Convite Oficial</div>
+  <p class="hero-invite-text" data-i18n="inviteText">
+    É com imensa honra que a M-Mola, S.A. tem o prazer<br>
+    de convidá-lo(a) para a celebração do<br>
+    <strong style="color:var(--gold-light)">10.º Aniversário</strong>
+    e o lançamento oficial do <strong style="color:var(--gold-light)">QR e-Mola</strong>.
+  </p>
+
+  <div class="hero-event-card">
+    <div class="event-row">
+      <div class="event-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+      </div>
+      <div class="event-info">
+        <div class="label" data-i18n="cardDate">Data</div>
+        <div class="value" data-i18n="cardDateVal">Sexta-feira, 14 de Agosto de 2026</div>
+      </div>
+    </div>
+    <div class="event-row">
+      <div class="event-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+      </div>
+      <div class="event-info">
+        <div class="label" data-i18n="cardTime">Horário</div>
+        <div class="value">17:00 — 22:00</div>
+      </div>
+    </div>
+    <div class="event-row">
+      <div class="event-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+      </div>
+      <div class="event-info">
+        <div class="label" data-i18n="cardVenue">Local</div>
+        <div class="value">Gloria Hotel · Maputo</div>
+      </div>
+    </div>
+    <div class="event-row">
+      <div class="event-icon">
+        <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      </div>
+      <div class="event-info">
+        <div class="label" data-i18n="cardDress">Traje</div>
+        <div class="value" data-i18n="cardDressVal">Business Formal</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <span data-i18n="scrollHint">Deslizar para baixo</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- ══ ABOUT M-MOLA ═══════════════════════════════════════════════════════ -->
+<section style="padding:64px 28px">
+  <div class="fade-up">
+    <div class="section-tag" data-i18n="aboutTag">Sobre a M-Mola</div>
+    <h2 class="section-title" data-i18n="aboutTitle">A carteira digital<br>líder de Moçambique</h2>
+  </div>
+  <div class="divider fade-up"><span>✦</span></div>
+  <p class="about-text fade-up" data-i18n="aboutBody">
+    Há <strong>10 anos</strong>, a M-Mola nasceu com uma missão simples e poderosa:
+    <strong>democratizar o acesso ao sistema financeiro digital</strong> em Moçambique.
+    Hoje, somos o parceiro de confiança de milhões de moçambicanos — de Maputo ao Niassa —
+    permitindo pagamentos, transferências e serviços financeiros com apenas um toque.
+  </p>
+  <div class="stats-grid fade-up" style="transition-delay:.1s">
+    <div class="stat-card">
+      <div class="stat-num" data-target="10">0</div>
+      <div class="stat-label" data-i18n="stat1">Anos de<br>Operação</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">#1</div>
+      <div class="stat-label" data-i18n="stat2">Mobile Money<br>em Moçambique</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" data-target="450">0</div>
+      <div class="stat-label" data-i18n="stat3">Parceiros<br>Estratégicos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">QR</div>
+      <div class="stat-label" data-i18n="stat4">e-Mola<br>Lançamento 2026</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PRODUCT FEATURES ════════════════════════════════════════════════════ -->
+<div class="features">
+  <div class="fade-up" style="padding:0 0 32px">
+    <div class="section-tag" data-i18n="featTag">Soluções e-Mola</div>
+    <h2 class="section-title" data-i18n="featTitle">Tecnologia que<br>transforma vidas</h2>
+    <p class="section-sub" data-i18n="featSub">Inovação financeira para todos os moçambicanos</p>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-icon">
+      <svg viewBox="0 0 48 48" fill="none">
+        <rect x="6" y="6" width="14" height="14" rx="2" stroke="#C9A84C" stroke-width="2"/>
+        <rect x="9" y="9" width="8" height="8" fill="#C9A84C" rx="1"/>
+        <rect x="28" y="6" width="14" height="14" rx="2" stroke="#C9A84C" stroke-width="2"/>
+        <rect x="31" y="9" width="8" height="8" fill="#C9A84C" rx="1"/>
+        <rect x="6" y="28" width="14" height="14" rx="2" stroke="#C9A84C" stroke-width="2"/>
+        <rect x="9" y="31" width="8" height="8" fill="#C9A84C" rx="1"/>
+        <rect x="28" y="28" width="4" height="4" fill="#C9A84C" rx="1"/>
+        <rect x="34" y="28" width="4" height="4" fill="#C9A84C" rx="1"/>
+        <rect x="28" y="34" width="4" height="4" fill="#C9A84C" rx="1"/>
+        <rect x="34" y="34" width="8" height="8" fill="#C9A84C" rx="1"/>
+      </svg>
+    </div>
+    <div class="feature-body">
+      <div class="ftitle" data-i18n="f1title">Pagamento QR e-Mola</div>
+      <div class="fdesc" data-i18n="f1desc">Pague em qualquer estabelecimento com um simples scan. Rápido, seguro e sem contacto. Lançamento oficial nesta celebração.</div>
+      <span class="feature-badge" data-i18n="f1badge">Novo · 2026</span>
+    </div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-icon">
+      <svg viewBox="0 0 48 48" fill="none">
+        <rect x="12" y="4" width="24" height="40" rx="4" stroke="#C9A84C" stroke-width="2"/>
+        <rect x="16" y="10" width="16" height="10" rx="2" stroke="#E8D08A" stroke-width="1.5"/>
+        <line x1="16" y1="26" x2="32" y2="26" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="16" y1="31" x2="26" y2="31" stroke="rgba(201,168,76,.4)" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="24" cy="39" r="2" fill="#C9A84C"/>
+      </svg>
+    </div>
+    <div class="feature-body">
+      <div class="ftitle" data-i18n="f2title">Carteira Digital M-Mola</div>
+      <div class="fdesc" data-i18n="f2desc">Guarde, envie e receba dinheiro directamente no seu telemóvel. Disponível 24/7, em todo o território nacional.</div>
+      <span class="feature-badge" data-i18n="f2badge">10 Anos no Mercado</span>
+    </div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-icon">
+      <svg viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="24" r="18" stroke="#C9A84C" stroke-width="2"/>
+        <path d="M16 20 L32 20 L28 16" stroke="#E8D08A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M32 28 L16 28 L20 32" stroke="#C9A84C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="feature-body">
+      <div class="ftitle" data-i18n="f3title">Transferências Instantâneas</div>
+      <div class="fdesc" data-i18n="f3desc">Transfira fundos entre contas M-Mola, bancos parceiros e operadoras em segundos. BIM, BCI, Standard Bank, ABSA e mais.</div>
+      <span class="feature-badge" data-i18n="f3badge">+15 Bancos Parceiros</span>
+    </div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-icon">
+      <svg viewBox="0 0 48 48" fill="none">
+        <path d="M24 4 L38 10 L38 24 C38 33 24 44 24 44 C24 44 10 33 10 24 L10 10 Z"
+          stroke="#C9A84C" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M18 24 L22 28 L30 20" stroke="#E8D08A" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="feature-body">
+      <div class="ftitle" data-i18n="f4title">Segurança de Nível Bancário</div>
+      <div class="fdesc" data-i18n="f4desc">Autenticação em dois factores, encriptação de ponta a ponta e monitorização em tempo real. A sua segurança é a nossa prioridade.</div>
+      <span class="feature-badge" data-i18n="f4badge">Certificado BM</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TIMELINE ════════════════════════════════════════════════════════════ -->
+<div class="timeline-section">
+  <div class="fade-up">
+    <div class="section-tag" data-i18n="tlTag">Programa do Evento</div>
+    <h2 class="section-title" data-i18n="tlTitle">Uma noite<br>inesquecível</h2>
+    <p class="section-sub" data-i18n="tlSub">14 de Agosto de 2026 · Gloria Hotel</p>
+  </div>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-time">16:00</div>
+      <div class="tl-event" data-i18n="tl1e">Abertura das Portas &amp; Check-in</div>
+      <div class="tl-desc" data-i18n="tl1d">Recepção de convidados · Welcome drink · Experiência QR e-Mola</div>
+    </div>
+    <div class="tl-item highlight">
+      <div class="tl-dot"></div>
+      <div class="tl-time">17:00</div>
+      <div class="tl-event" data-i18n="tl2e">Cerimónia de Abertura</div>
+      <div class="tl-desc" data-i18n="tl2d">Dança Marrabenta · Estreia de "Juntos Chegamos Aqui" · Demo QR ao vivo</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-time">17:45</div>
+      <div class="tl-event" data-i18n="tl3e">Discursos de Honra</div>
+      <div class="tl-desc" data-i18n="tl3d">Representantes do Governo · Parceiros estratégicos · Embaixadores</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-time">18:00</div>
+      <div class="tl-event" data-i18n="tl4e">Vídeo "10 Anos de Impacto"</div>
+      <div class="tl-desc" data-i18n="tl4d">Documentário da jornada M-Mola · Corte do bolo "10 Anos Juntos"</div>
+    </div>
+    <div class="tl-item highlight">
+      <div class="tl-dot"></div>
+      <div class="tl-time">18:25</div>
+      <div class="tl-event" data-i18n="tl5e">Jantar de Gala – Buffet</div>
+      <div class="tl-desc" data-i18n="tl5d">Culinária tradicional moçambicana · 4 estações temáticas · Música Jazz ao vivo</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-time">20:20</div>
+      <div class="tl-event" data-i18n="tl6e">Sorteio de Prémios</div>
+      <div class="tl-desc" data-i18n="tl6d">Samsung S26 Ultra · AirPods Pro · Power Banks · Networking</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-time">21:00</div>
+      <div class="tl-event" data-i18n="tl7e">Encerramento &amp; Despedida</div>
+      <div class="tl-desc" data-i18n="tl7d">Entrega de lembranças · Fotografias · Agradecimentos</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ GALLERY ═════════════════════════════════════════════════════════════ -->
+<div class="gallery-section">
+  <div class="fade-up" style="margin-bottom:24px">
+    <div class="section-tag" data-i18n="galTag">Galeria</div>
+    <h2 class="section-title" data-i18n="galTitle">A nossa identidade</h2>
+  </div>
+  <div class="gallery-scroll">
+    <div class="gallery-card">
+      <img src="invitation-card-proposal.jpg" alt="Official Invitation">
+      <div class="gallery-cap" data-i18n="gal1">Convite Oficial · Edição Limitada</div>
+    </div>
+    <div class="gallery-card">
+      <img src="gift-demo.jpg" alt="Gift bag">
+      <div class="gallery-cap" data-i18n="gal2">Oferta Exclusiva · 10 Anos Juntos</div>
+    </div>
+    <div class="gallery-card">
+      <div class="gallery-img">
+        <svg viewBox="0 0 180 160" fill="none" width="180" height="160">
+          <rect width="180" height="160" fill="#16213E"/>
+          <rect x="40" y="30" width="100" height="70" rx="8" stroke="#C9A84C" stroke-width="1.5"/>
+          <rect x="50" y="40" width="38" height="24" rx="3" fill="rgba(201,168,76,.15)" stroke="#C9A84C" stroke-width="1"/>
+          <text x="69" y="57" font-family="serif" font-size="14" fill="#C9A84C" text-anchor="middle">$</text>
+          <line x1="50" y1="75" x2="130" y2="75" stroke="rgba(201,168,76,.3)" stroke-width="1"/>
+          <line x1="50" y1="84" x2="100" y2="84" stroke="rgba(201,168,76,.15)" stroke-width="1"/>
+          <text x="90" y="125" font-family="serif" font-size="9" fill="rgba(201,168,76,.5)" text-anchor="middle" letter-spacing="3">e-MOLA</text>
+        </svg>
+      </div>
+      <div class="gallery-cap" data-i18n="gal3">Gloria Hotel · Ballroom Principal</div>
+    </div>
+    <div class="gallery-card">
+      <div class="gallery-img">
+        <svg viewBox="0 0 180 160" fill="none" width="180" height="160">
+          <rect width="180" height="160" fill="#16213E"/>
+          <path d="M90,20 L105,35 L110,30 L120,50 L115,80 L118,95 L110,110 L100,125 L90,132 L80,125 L70,110 L62,95 L65,80 L60,50 L70,30 L75,35 Z" fill="rgba(201,168,76,.12)" stroke="#C9A84C" stroke-width="1.2"/>
+          <circle cx="90" cy="55" r="4" fill="#C9A84C"/>
+          <circle cx="80" cy="75" r="3" fill="rgba(201,168,76,.6)"/>
+          <circle cx="100" cy="85" r="3" fill="rgba(201,168,76,.6)"/>
+          <circle cx="88" cy="100" r="3" fill="rgba(201,168,76,.6)"/>
+          <text x="90" y="148" font-family="serif" font-size="8" fill="rgba(201,168,76,.5)" text-anchor="middle" letter-spacing="2">MOÇAMBIQUE</text>
+        </svg>
+      </div>
+      <div class="gallery-cap" data-i18n="gal4">Presença Nacional · 10 Províncias</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RSVP ════════════════════════════════════════════════════════════════ -->
+<div class="rsvp-section">
+  <div class="rsvp-card fade-up">
+    <div id="rsvp-form">
+      <div class="section-tag" style="margin-bottom:12px" data-i18n="rsvpTag">Confirmação de Presença</div>
+      <div class="rsvp-title" data-i18n="rsvpTitle">Irá estar<br>connosco?</div>
+      <div class="divider"><span>✦</span></div>
+      <p class="rsvp-sub" data-i18n="rsvpSub">
+        A sua presença engrandece esta celebração.<br>
+        Confirme até <strong style="color:var(--gold-light)">25 de Julho de 2026</strong>.
+      </p>
+      <div class="rsvp-deadline" data-i18n="rsvpDeadline">⏳ &nbsp; Prazo: 25 / 07 / 2026</div>
+      <div class="rsvp-buttons">
+        <button class="btn-yes" onclick="rsvpYes()" data-i18n="rsvpYes">✓ &nbsp; Confirmo</button>
+        <button class="btn-no" onclick="rsvpNo()" data-i18n="rsvpNo">Não poderei</button>
+      </div>
+      <p class="rsvp-note" data-i18n="rsvpNote">
+        Ao confirmar, será redirecionado para o formulário oficial.<br>
+        Para informações: <strong style="color:rgba(201,168,76,.5)">info@m-mola.co.mz</strong>
+      </p>
+    </div>
+    <div class="confirmed" id="confirmed-yes">
+      <div class="c-icon">🎉</div>
+      <div class="c-title" data-i18n="confYesTitle">Até breve!</div>
+      <div class="divider"><span>✦</span></div>
+      <p class="c-text" data-i18n="confYesText">
+        A sua confirmação foi recebida.<br>Aguardamos a sua presença com entusiasmo.<br><br>
+        <strong style="color:var(--gold-light)">14 Agosto · 17h · Gloria Hotel</strong>
+      </p>
+    </div>
+    <div class="confirmed" id="confirmed-no">
+      <div class="c-icon">🙏</div>
+      <div class="c-title" data-i18n="confNoTitle">Obrigado</div>
+      <div class="divider"><span>✦</span></div>
+      <p class="c-text" data-i18n="confNoText">
+        Lamentamos não poder contar consigo.<br>A sua mensagem foi registada.<br><br>
+        <strong style="color:rgba(201,168,76,.5)">Até a próxima celebração!</strong>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══════════════════════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-logo">e-Mola</div>
+  <div class="footer-tag" data-i18n="footerTag">10 Anos Juntos · Democratizando Pagamentos</div>
+  <div class="divider"><span>✦</span></div>
+  <div class="footer-contact">📧 &nbsp; info@m-mola.co.mz</div>
+  <div class="footer-contact">🌐 &nbsp; www.m-mola.co.mz</div>
+  <div class="footer-contact">📞 &nbsp; +258 84 000 0000</div>
+  <div class="footer-copy" data-i18n="footerCopy">© 2026 M-Mola, S.A. · Todos os direitos reservados</div>
+</footer>
+
+<script>
+// ══ TRANSLATIONS ══════════════════════════════════════════════════════════════
+const T = {
+  pt: {
+    sealLabel:    'Anos',
+    heroTagline:  '10 Anos Juntos',
+    inviteLabel:  'Convite Oficial',
+    inviteText:   'É com imensa honra que a M-Mola, S.A. tem o prazer<br>de convidá-lo(a) para a celebração do<br><strong style="color:var(--gold-light)">10.º Aniversário</strong> e o lançamento oficial do <strong style="color:var(--gold-light)">QR e-Mola</strong>.',
+    cardDate:     'Data',
+    cardDateVal:  'Sexta-feira, 14 de Agosto de 2026',
+    cardTime:     'Horário',
+    cardVenue:    'Local',
+    cardDress:    'Traje',
+    cardDressVal: 'Business Formal',
+    scrollHint:   'Deslizar para baixo',
+    aboutTag:     'Sobre a M-Mola',
+    aboutTitle:   'A carteira digital<br>líder de Moçambique',
+    aboutBody:    'Há <strong>10 anos</strong>, a M-Mola nasceu com uma missão simples e poderosa: <strong>democratizar o acesso ao sistema financeiro digital</strong> em Moçambique. Hoje, somos o parceiro de confiança de milhões de moçambicanos — de Maputo ao Niassa — permitindo pagamentos, transferências e serviços financeiros com apenas um toque.',
+    stat1:        'Anos de<br>Operação',
+    stat2:        'Mobile Money<br>em Moçambique',
+    stat3:        'Parceiros<br>Estratégicos',
+    stat4:        'e-Mola<br>Lançamento 2026',
+    featTag:      'Soluções e-Mola',
+    featTitle:    'Tecnologia que<br>transforma vidas',
+    featSub:      'Inovação financeira para todos os moçambicanos',
+    f1title:      'Pagamento QR e-Mola',
+    f1desc:       'Pague em qualquer estabelecimento com um simples scan. Rápido, seguro e sem contacto. Lançamento oficial nesta celebração.',
+    f1badge:      'Novo · 2026',
+    f2title:      'Carteira Digital M-Mola',
+    f2desc:       'Guarde, envie e receba dinheiro directamente no seu telemóvel. Disponível 24/7, em todo o território nacional.',
+    f2badge:      '10 Anos no Mercado',
+    f3title:      'Transferências Instantâneas',
+    f3desc:       'Transfira fundos entre contas M-Mola, bancos parceiros e operadoras em segundos. BIM, BCI, Standard Bank, ABSA e mais.',
+    f3badge:      '+15 Bancos Parceiros',
+    f4title:      'Segurança de Nível Bancário',
+    f4desc:       'Autenticação em dois factores, encriptação de ponta a ponta e monitorização em tempo real. A sua segurança é a nossa prioridade.',
+    f4badge:      'Certificado BM',
+    tlTag:        'Programa do Evento',
+    tlTitle:      'Uma noite<br>inesquecível',
+    tlSub:        '14 de Agosto de 2026 · Gloria Hotel',
+    tl1e: 'Abertura das Portas & Check-in',
+    tl1d: 'Recepção de convidados · Welcome drink · Experiência QR e-Mola',
+    tl2e: 'Cerimónia de Abertura',
+    tl2d: 'Dança Marrabenta · Estreia de "Juntos Chegamos Aqui" · Demo QR ao vivo',
+    tl3e: 'Discursos de Honra',
+    tl3d: 'Representantes do Governo · Parceiros estratégicos · Embaixadores',
+    tl4e: 'Vídeo "10 Anos de Impacto"',
+    tl4d: 'Documentário da jornada M-Mola · Corte do bolo "10 Anos Juntos"',
+    tl5e: 'Jantar de Gala – Buffet',
+    tl5d: 'Culinária tradicional moçambicana · 4 estações temáticas · Música Jazz ao vivo',
+    tl6e: 'Sorteio de Prémios',
+    tl6d: 'Samsung S26 Ultra · AirPods Pro · Power Banks · Networking',
+    tl7e: 'Encerramento & Despedida',
+    tl7d: 'Entrega de lembranças · Fotografias · Agradecimentos',
+    galTag:   'Galeria',
+    galTitle: 'A nossa identidade',
+    gal1: 'Convite Oficial · Edição Limitada',
+    gal2: 'Oferta Exclusiva · 10 Anos Juntos',
+    gal3: 'Gloria Hotel · Ballroom Principal',
+    gal4: 'Presença Nacional · 10 Províncias',
+    rsvpTag:      'Confirmação de Presença',
+    rsvpTitle:    'Irá estar<br>connosco?',
+    rsvpSub:      'A sua presença engrandece esta celebração.<br>Confirme até <strong style="color:var(--gold-light)">25 de Julho de 2026</strong>.',
+    rsvpDeadline: '⏳ &nbsp; Prazo: 25 / 07 / 2026',
+    rsvpYes:      '✓ &nbsp; Confirmo',
+    rsvpNo:       'Não poderei',
+    rsvpNote:     'Ao confirmar, será redirecionado para o formulário oficial.<br>Para informações: <strong style="color:rgba(201,168,76,.5)">info@m-mola.co.mz</strong>',
+    confYesTitle: 'Até breve!',
+    confYesText:  'A sua confirmação foi recebida.<br>Aguardamos a sua presença com entusiasmo.<br><br><strong style="color:var(--gold-light)">14 Agosto · 17h · Gloria Hotel</strong>',
+    confNoTitle:  'Obrigado',
+    confNoText:   'Lamentamos não poder contar consigo.<br>A sua mensagem foi registada.<br><br><strong style="color:rgba(201,168,76,.5)">Até a próxima celebração!</strong>',
+    footerTag:    '10 Anos Juntos · Democratizando Pagamentos',
+    footerCopy:   '© 2026 M-Mola, S.A. · Todos os direitos reservados',
+  },
+  en: {
+    sealLabel:    'Years',
+    heroTagline:  '10 Years Together',
+    inviteLabel:  'Official Invitation',
+    inviteText:   'It is with great honour that M-Mola, S.A. cordially invites you<br>to the celebration of our<br><strong style="color:var(--gold-light)">10th Anniversary</strong> and the official launch of <strong style="color:var(--gold-light)">QR e-Mola</strong>.',
+    cardDate:     'Date',
+    cardDateVal:  'Friday, 14th August 2026',
+    cardTime:     'Time',
+    cardVenue:    'Venue',
+    cardDress:    'Dress Code',
+    cardDressVal: 'Business Formal',
+    scrollHint:   'Scroll down',
+    aboutTag:     'About M-Mola',
+    aboutTitle:   'Mozambique\'s leading<br>digital wallet',
+    aboutBody:    '<strong>10 years</strong> ago, M-Mola was born with a simple yet powerful mission: <strong>to democratise access to digital financial services</strong> in Mozambique. Today, we are the trusted partner of millions of Mozambicans — from Maputo to Niassa — enabling payments, transfers and financial services with a single tap.',
+    stat1:        'Years of<br>Operation',
+    stat2:        'Mobile Money<br>in Mozambique',
+    stat3:        'Strategic<br>Partners',
+    stat4:        'e-Mola<br>QR Launch 2026',
+    featTag:      'e-Mola Solutions',
+    featTitle:    'Technology that<br>transforms lives',
+    featSub:      'Financial innovation for every Mozambican',
+    f1title:      'QR e-Mola Payment',
+    f1desc:       'Pay at any merchant with a simple scan. Fast, secure and contactless. Officially launching at this celebration.',
+    f1badge:      'New · 2026',
+    f2title:      'M-Mola Digital Wallet',
+    f2desc:       'Store, send and receive money directly on your phone. Available 24/7, across the entire country.',
+    f2badge:      '10 Years in the Market',
+    f3title:      'Instant Transfers',
+    f3desc:       'Move funds between M-Mola accounts, partner banks and operators in seconds. BIM, BCI, Standard Bank, ABSA and more.',
+    f3badge:      '+15 Partner Banks',
+    f4title:      'Bank-Grade Security',
+    f4desc:       'Two-factor authentication, end-to-end encryption and real-time monitoring. Your security is our top priority.',
+    f4badge:      'BM Certified',
+    tlTag:        'Event Programme',
+    tlTitle:      'An unforgettable<br>evening',
+    tlSub:        '14th August 2026 · Gloria Hotel',
+    tl1e: 'Doors Open & Check-in',
+    tl1d: 'Guest reception · Welcome drinks · QR e-Mola experience',
+    tl2e: 'Opening Ceremony',
+    tl2d: 'Marrabenta Dance · Premiere of "Together We Arrived Here" · Live QR Demo',
+    tl3e: 'Honorary Speeches',
+    tl3d: 'Government representatives · Strategic partners · Ambassadors',
+    tl4e: 'Video "10 Years of Impact"',
+    tl4d: 'M-Mola journey documentary · "10 Years Together" anniversary cake cutting',
+    tl5e: 'Gala Dinner – Buffet',
+    tl5d: 'Traditional Mozambican cuisine · 4 themed stations · Live Jazz music',
+    tl6e: 'Prize Draw',
+    tl6d: 'Samsung S26 Ultra · AirPods Pro · Power Banks · Networking',
+    tl7e: 'Closing & Farewell',
+    tl7d: 'Gift distribution · Photography · Acknowledgements',
+    galTag:   'Gallery',
+    galTitle: 'Our identity',
+    gal1: 'Official Invitation · Limited Edition',
+    gal2: 'Exclusive Gift · 10 Years Together',
+    gal3: 'Gloria Hotel · Main Ballroom',
+    gal4: 'National Presence · 10 Provinces',
+    rsvpTag:      'RSVP',
+    rsvpTitle:    'Will you be<br>joining us?',
+    rsvpSub:      'Your presence makes this celebration complete.<br>Please confirm by <strong style="color:var(--gold-light)">25th July 2026</strong>.',
+    rsvpDeadline: '⏳ &nbsp; Deadline: 25 / 07 / 2026',
+    rsvpYes:      '✓ &nbsp; I Confirm',
+    rsvpNo:       'Unable to attend',
+    rsvpNote:     'Upon confirming you will be redirected to the official form.<br>Enquiries: <strong style="color:rgba(201,168,76,.5)">info@m-mola.co.mz</strong>',
+    confYesTitle: 'See you soon!',
+    confYesText:  'Your confirmation has been received.<br>We look forward to celebrating with you.<br><br><strong style="color:var(--gold-light)">14 August · 17h · Gloria Hotel</strong>',
+    confNoTitle:  'Thank You',
+    confNoText:   'We\'re sorry you cannot make it.<br>Your response has been recorded.<br><br><strong style="color:rgba(201,168,76,.5)">Until the next celebration!</strong>',
+    footerTag:    '10 Years Together · Democratising Payments',
+    footerCopy:   '© 2026 M-Mola, S.A. · All rights reserved',
+  }
+};
+
+// ══ LANGUAGE SWITCH ═══════════════════════════════════════════════════════════
+let currentLang = 'pt';
+
+function setLang(lang) {
+  currentLang = lang;
+  document.documentElement.lang = lang;
+
+  // Update toggle buttons
+  document.getElementById('btn-pt').classList.toggle('active', lang === 'pt');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+
+  // Update all i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (T[lang][key] !== undefined) el.innerHTML = T[lang][key];
+  });
+}
+
+// ══ RSVP ═════════════════════════════════════════════════════════════════════
+// ⚠️ Substituir pelo link real do Google Form / Replace with your actual Google Form link
+const GOOGLE_FORM_YES = 'https://forms.gle/YOUR_FORM_ID_HERE';
+const GOOGLE_FORM_NO  = 'https://forms.gle/YOUR_FORM_ID_HERE';
+
+function rsvpYes() {
+  document.getElementById('rsvp-form').style.display = 'none';
+  document.getElementById('confirmed-yes').style.display = 'block';
+  // window.open(GOOGLE_FORM_YES, '_blank');
+}
+function rsvpNo() {
+  document.getElementById('rsvp-form').style.display = 'none';
+  document.getElementById('confirmed-no').style.display = 'block';
+  // window.open(GOOGLE_FORM_NO, '_blank');
+}
+
+// ══ SCROLL ANIMATIONS ════════════════════════════════════════════════════════
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') });
+}, { threshold: 0.15 });
+document.querySelectorAll('.fade-up, .feature-card, .tl-item').forEach(el => observer.observe(el));
+
+// Stagger timeline items
+document.querySelectorAll('.tl-item').forEach((el, i) => {
+  el.style.transitionDelay = (i * 0.1) + 's';
+});
+
+// ══ COUNTER ANIMATION ════════════════════════════════════════════════════════
+const counterObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.querySelectorAll('[data-target]').forEach(el => {
+      const target = +el.dataset.target;
+      let current = 0;
+      const step = target / 40;
+      const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = Math.floor(current) + (target >= 100 ? '+' : '');
+        if (current >= target) clearInterval(timer);
+      }, 40);
+    });
+    counterObserver.unobserve(e.target);
+  });
+}, { threshold: 0.4 });
+document.querySelectorAll('.stats-grid').forEach(el => counterObserver.observe(el));
+</script>
+</body>
+</html>
