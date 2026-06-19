@@ -15,11 +15,11 @@
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 const TOTAL_TICKETS = 211;      // Tổng số khách mời
 
-// PIN đọc từ sheet "Config" (ô B1) — có thể đổi trực tiếp trên Sheet
+// PIN đọc từ sheet "Config" (ô B2) — có thể đổi trực tiếp trên Sheet
 function getAdminPIN() {
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Config');
-    if (sheet) return String(sheet.getRange('B1').getValue()) || '2026';
+    if (sheet) return String(sheet.getRange('B2').getValue()) || '2026';
   } catch(_) {}
   return '2026';
 }
